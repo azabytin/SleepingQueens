@@ -25,7 +25,6 @@ public enum GameState {
             if( gameLogic.playCardFromGameState( type, card ) ){
                 return WAIT_FOR_CARD;
             }
-
             return IDLE;
         }
     },
@@ -33,10 +32,14 @@ public enum GameState {
         GameState PlayCard(Card card, GameLogic.userType type, GameLogic gameLogic) {
 
             if (card.isStick()) {
+                gameLogic.removeCard( type, card);
                 return WAIT_FOR_CARD;
             }
-
             gameLogic.getBackQueen( type );
+
+            if( gameLogic.playCardFromGameState( type, card ) ){
+                return WAIT_FOR_CARD;
+            }
             return IDLE;
         }
     },
@@ -44,10 +47,14 @@ public enum GameState {
         GameState PlayCard(Card card, GameLogic.userType type, GameLogic gameLogic) {
 
             if (card.isDragon()) {
+                gameLogic.removeCard( type, card);
                 return WAIT_FOR_CARD;
             }
+            gameLogic.giveOponentQueen(type);
 
-            gameLogic.giveOponentQueen( type );
+            if (gameLogic.playCardFromGameState(type, card)) {
+                return WAIT_FOR_CARD;
+            }
             return IDLE;
         }
 
