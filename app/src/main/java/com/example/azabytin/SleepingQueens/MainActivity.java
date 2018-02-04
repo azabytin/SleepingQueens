@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void UpdateCardsView()
     {
-        Log.d("GUI", "UpdateCardsView()");
         setButtonsImages( gameLogic.getUserCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
 
         if( gameLogic.getLastCard() != null )
