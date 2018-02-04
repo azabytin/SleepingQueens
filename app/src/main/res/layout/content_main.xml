@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.azabytin.SleepingQueens.MainActivity"
+    android:background="#FFFFFF"
+    tools:showIn="@layout/activity_main">
+
+
+    <android.support.constraint.ConstraintLayout
+        android:background="#FFFFFF"
+        android:layout_width="358dp"
+        android:layout_height="120dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="128dp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/usedStackImage2"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/stackImage"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/usedStackImage"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/stackImage"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/stackImage"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/back" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="358dp"
+        android:layout_height="90dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout3">
+
+        <ImageButton
+            android:id="@+id/oponentQueenCardButton1"
+            android:layout_width="50dp"
+            android:layout_height="66dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/oponentQueenCardButton2"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/oponentQueenCardButton1"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/oponentQueenCardButton3"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/oponentQueenCardButton2"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/oponentQueenCardButton4"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/oponentQueenCardButton3"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <ImageButton
+            android:id="@+id/oponentQueenCardButton5"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/oponentQueenCardButton4"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="358dp"
+        android:layout_height="90dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/queenCardButton1"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/queenCardButton2"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            android:contentDescription=" "
+            app:layout_constraintStart_toEndOf="@+id/queenCardButton1"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/queenCardButton3"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/queenCardButton2"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/queenCardButton4"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/queenCardButton3"
+            app:layout_constraintTop_toTopOf="parent"
+             />
+
+        <ImageButton
+            android:id="@+id/queenCardButton5"
+            android:layout_width="50dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toEndOf="@+id/queenCardButton4"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+    </android.support.constraint.ConstraintLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout3"
+        android:layout_width="358dp"
+        android:layout_height="90dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/oponentCardButton1"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/oponentCardButton2"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toEndOf="@+id/oponentCardButton1"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/oponentCardButton3"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toEndOf="@+id/oponentCardButton2"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/oponentCardButton4"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toEndOf="@+id/oponentCardButton3"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back"/>
+
+        <ImageButton
+            android:id="@+id/oponentCardButton5"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toEndOf="@+id/oponentCardButton4"
+            app:layout_constraintTop_toTopOf="parent"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="358dp"
+        android:layout_height="90dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/cardButton1"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            android:onClick="onClick"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/cardButton2"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="0dp"
+            android:contentDescription=" "
+            app:layout_constraintStart_toEndOf="@+id/cardButton1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:onClick="onClick"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/cardButton3"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintStart_toEndOf="@+id/cardButton2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:onClick="onClick"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/cardButton4"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintStart_toEndOf="@+id/cardButton3"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:onClick="onClick"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back"/>
+
+        <ImageButton
+            android:id="@+id/cardButton5"
+            android:layout_width="61dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintStart_toEndOf="@+id/cardButton4"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:onClick="onClick"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="@color/white"
+            app:srcCompat="@drawable/back" />
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</android.support.constraint.ConstraintLayout>
