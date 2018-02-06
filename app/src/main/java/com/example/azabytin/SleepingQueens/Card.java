@@ -56,6 +56,7 @@ public class Card {
     public boolean isJocker( ){return type == cardType.jocker; };
 
     public cardType getType() {
+
         return type;
     }
 
