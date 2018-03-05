@@ -64,8 +64,8 @@ public void startNewGame()
     refillCardsFromStack( userType.USER );
     refillCardsFromStack( userType.OPPONENT);
 
-    userGameState = GameState.WAIT_FOR_CARD;
-    oponentGameState = GameState.IDLE;
+    userGameState = new GameStateWaitForСard(userType.USER, this );
+    oponentGameState = new GameStateIdle(userType.OPPONENT, this);
 }
 
     protected void refillCardsFromStack(userType type){
@@ -189,36 +189,42 @@ public void startNewGame()
         return hasPair;
     }
 
-    public void userPlayCard( Card card)
+    public void userPlayCard( Card userCard)
     {
-        userGameState = userGameState.PlayCard( card, userType.USER, this );
+        userGameState = userGameState.PlayCard( userCard );
 
-        if( userGameState == GameState.IDLE ){
-            ///
-            if( (oponentGameState == GameState.WAIT_FOR_CARD) && card.isKing()) {
-                oponentGameState = oponentGameState;
-            }
-            ///
-            oponentGameState = oponentGameState.PlayCard( card, userType.OPPONENT, this );
+        if( userGameState.TurnEnded()  ){
 
-            Card oponentPlayCard;
+            oponentGameState = oponentGameState.PlayCard( userCard );
+
+            Card opponentCard;
             do {
-                oponentPlayCard = ChooseOponentCardToPlay( oponentGameState );
-                oponentGameState = oponentGameState.PlayCard(oponentPlayCard, userType.OPPONENT, this );
-            }while ( oponentGameState != GameState.IDLE );
+                opponentCard = ChooseOponentCardToPlay( oponentGameState );
+                oponentGameState = oponentGameState.PlayCard(opponentCard );
+            }while ( oponentGameState.TurnEnded() == false );
 
-            userGameState = userGameState.PlayCard( oponentPlayCard, userType.USER, this );
+            userGameState = userGameState.PlayCard( opponentCard );
         }
+    }
+
+    protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
+    {
+        if( oponentCards.GetDragon() != null )
+            return oponentCards.GetDragon();
+
+        return ChooseOponentCardToPlay( (GameState)state );
+    }
+
+    protected Card ChooseOponentCardToPlay( GameStateMagicAttacted state)
+    {
+        if( oponentCards.GetStick() != null )
+            return oponentCards.GetStick();
+
+        return ChooseOponentCardToPlay( (GameState)state );
     }
 
     protected Card ChooseOponentCardToPlay( GameState state)
     {
-        if( (oponentGameState == GameState.KNIGHT_ATTACKED) && (oponentCards.GetDragon() != null) )
-            return oponentCards.GetDragon();
-
-        if( (oponentGameState == GameState.MAGIC_ATTACKED) && (oponentCards.GetStick() != null) )
-            return oponentCards.GetStick();
-
         if( userQueenCards.size() > 0 ) {
             if (oponentCards.GetKnight() != null)
                 return oponentCards.GetKnight();
