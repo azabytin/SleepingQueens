@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 
@@ -41,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewToCardHash = new Hashtable<View, Card>();
 
         gameLogic.startNewGame();
-        setButtonsImages( gameLogic.getUserCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
-        setButtonsImages( gameLogic.getUserQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
+        setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
+        setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
     }
 
     @Override
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void UpdateCardsView()
     {
-        setButtonsImages( gameLogic.getUserCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
+        setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
 
         if( gameLogic.getLastCard() != null )
             setUsedCardButton( gameLogic.getLastCard().resourceId );
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else
             setBeforeUsedCardButton( com.example.azabytin.SleepingQueens.R.drawable.back );
 
-        setButtonsImages( gameLogic.getUserQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
-        setButtonsImages( gameLogic.getOponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1 );
+        setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
+        setButtonsImages( gameLogic.getComputerQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1 );
     }
 }

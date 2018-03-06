@@ -2,7 +2,6 @@ package com.example.azabytin.SleepingQueens;
 
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,177 +11,85 @@ import java.util.List;
 
 public class GameLogic {
 
-    protected List<Card> playCardsStack;
-    protected List<Card> queenCardsStack;
+    protected PlayCardsStack playCardsStack;
+    protected PlayCardsStack queenCardsStack;
 
-    protected UserCards userCards;
-    protected List<Card> userQueenCards;
-    protected UserCards oponentCards;
-    protected List<Card> oponentQueenCards;
     Card lastCard;
     Card beforeLastCard;
 
-    protected GameState userGameState;
-    protected GameState oponentGameState;
+    protected GameState humanGameState;
+    protected GameState computerGameState;
+    protected Player humanPlayer;
+    protected Player computerPlayer;
 
-
-    enum userType{
-        USER
-        {
-            public userType other() {
-                return OPPONENT;
-            };
-        },
-        OPPONENT
-                {
-                    public userType other() {
-                        return USER;
-                    };
-                };
-
-        public userType other() {
-            return null;
-        }};
 
 public void startNewGame()
 {
-    queenCardsStack = CardFactory.createQueenCards();
-    Collections.shuffle( queenCardsStack );
-    userQueenCards = new ArrayList<Card>();
-    oponentQueenCards = new ArrayList<Card>();
+    queenCardsStack = new PlayCardsStack( new QueenCardCreater());
+    playCardsStack = new PlayCardsStack( new PlayCardCreater());
 
-    userCards = new UserCards();
-    oponentCards = new UserCards();
+    Player    humanPlayer = new Player();
+    Player    computerPlayer = new Player( humanPlayer );
+    humanPlayer.SetOpponent(this.computerPlayer);
 
-    userCards.clear();
-    oponentCards.clear();
+    refillCardsFromStack( humanPlayer );
+    refillCardsFromStack( computerPlayer );
 
-    userCards.add( new Card( Card.cardType.magic, com.example.azabytin.SleepingQueens.R.drawable.magic, 0 ) );
-    userCards.add( new Card( Card.cardType.jocker, com.example.azabytin.SleepingQueens.R.drawable.jocker, 0 ) );
-    oponentCards.add( new Card( Card.cardType.knight, com.example.azabytin.SleepingQueens.R.drawable.knight, 0 ) );
-
-    refillCardsFromStack( userType.USER );
-    refillCardsFromStack( userType.OPPONENT);
-
-    userGameState = new GameStateWaitForСard(userType.USER, this );
-    oponentGameState = new GameStateIdle(userType.OPPONENT, this);
+    humanGameState = new GameStateWaitForСard(humanPlayer, this );
+    computerGameState = new GameStateIdle(computerPlayer, this);
 }
 
-    protected void refillCardsFromStack(userType type){
+    protected void refillCardsFromStack(Player player){
 
-        if( playCardsStack == null || playCardsStack.size() == 0 ){
-            playCardsStack = CardFactory.createPlayCards();
-            Collections.shuffle( playCardsStack );
-        }
+        player.AddCard(playCardsStack.Get());
 
-        if( type == userType.USER ) {
-            userCards.add(0,playCardsStack.get(0));
-            playCardsStack.remove(0);
-            if(userCards.size() < 5){
-                refillCardsFromStack( type );
-            }
-        }
-        else if ( type == userType.OPPONENT){
-            oponentCards.add(0,playCardsStack.get(0));
-            playCardsStack.remove(0);
-            if(oponentCards.size() < 5){
-                refillCardsFromStack( type );
-            }
+        if(player.CardsNumber()  < 5){
+            refillCardsFromStack( player );
         }
     }
-    protected void removeCard( userType type, Card card){
 
-        if( type == userType.USER ) {
-            userCards.remove(card);
-        }
-        else if ( type == userType.OPPONENT){
-            oponentCards.remove(card);
-        }
+    protected void removeCardFromPlayer( Card card, Player player){
+        player.RemovecCard( card );
 
         beforeLastCard = lastCard;
         lastCard = card;
     }
-    protected Card peekUserCard( userType type){
 
-        if( type == userType.USER ) {
-            return userCards.get(0);
-        }
-        else if ( type == userType.OPPONENT){
-            return oponentCards.get(0);
-        }
-        return null;
+
+    protected void OnGetBackQueen( Player player){
+
+        player.GetBackQueen( queenCardsStack );
     }
 
-     protected void getQueen( userType type){
+    protected void OnGiveOponentQueen( Player player){
 
-        if( type == userType.USER ) {
-            userQueenCards.add(queenCardsStack.get(0));
-            queenCardsStack.remove(0);
-        }
-        if ( type == userType.OPPONENT){
-            oponentQueenCards.add(queenCardsStack.get(0));
-            queenCardsStack.remove(0);
-        }
+        player.GiveOponentQueen();
     }
 
-    protected void getBackQueen( userType type){
-
-        if( type == userType.USER && userQueenCards.size()>0) {
-
-            queenCardsStack.add(userQueenCards.get(0));
-            userQueenCards.remove(0);
-        }
-        else if ( type == userType.OPPONENT && oponentQueenCards.size()>0){
-            queenCardsStack.add(oponentQueenCards.get(0));
-            oponentQueenCards.remove(0);
-        }
-    }
-
-    protected void giveOponentQueen( userType type){
-
-        if( type == userType.USER && userQueenCards.size()>0) {
-            Log.d("GameLogic", "giveOponentQueen( USER )");
-            oponentQueenCards.add(userQueenCards.get(0));
-            userQueenCards.remove(0);
-        }
-        else if ( type == userType.OPPONENT && oponentQueenCards.size()>0){
-            Log.d("GameLogic", "giveOponentQueen( OPPONENT )");
-            userQueenCards.add(oponentQueenCards.get(0));
-            oponentQueenCards.remove(0);
-        }
-    }
-
-    public boolean playCardFromGameState(GameLogic.userType type, Card card )
+    public boolean playCardFromGameState(Player player, Card card )
     {
-        removeCard( type, card);
+        removeCardFromPlayer( card, player);
 
-        boolean hasPair = false;
-
-        if( type == userType.USER ) {
-            hasPair = userCards.hasThisNumber(card);
-        }
-        else if ( type == userType.OPPONENT){
-            hasPair =  oponentCards.hasThisNumber(card);
-        }
+        boolean hasPair = player.hasThisNumber(card);
 
         if( !hasPair){
-            refillCardsFromStack(type);
+            refillCardsFromStack( player );
         }
         if( card.isKing()){
-            getQueen( type );
+            player.AddQueenCard( queenCardsStack.Get() );
         }
 
 
         if( card.isJocker()){
             Log.d("GameLogic", "playCardFromGameState() Jocker played");
 
-            if(  peekUserCard( type ).isOddNumver() ){
+            if(  player.GetLastAddedCard().isOddNumver() ){
                 Log.d("GameLogic", "playCardFromGameState() Jocker played give player queen");
-                getQueen( type );
+                player.AddQueenCard( queenCardsStack.Get() );
             }
-            if(  peekUserCard( type ).isEvenNumver() ){
+            if(  player.GetLastAddedCard().isEvenNumver() ){
                 Log.d("GameLogic", "playCardFromGameState() Jocker played give opponent queen");
-                getQueen( type.other() );
+                player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
             }
         }
 
@@ -191,73 +98,70 @@ public void startNewGame()
 
     public void userPlayCard( Card userCard)
     {
-        userGameState = userGameState.PlayCard( userCard );
+        humanGameState = humanGameState.PlayCard( userCard );
 
-        if( userGameState.TurnEnded()  ){
+        if( humanGameState.TurnEnded()  ){
 
-            oponentGameState = oponentGameState.PlayCard( userCard );
+            computerGameState = computerGameState.PlayCard( userCard );
 
             Card opponentCard;
             do {
-                opponentCard = ChooseOponentCardToPlay( oponentGameState );
-                oponentGameState = oponentGameState.PlayCard(opponentCard );
-            }while ( oponentGameState.TurnEnded() == false );
+                opponentCard = ChooseOponentCardToPlay(computerGameState);
+                computerGameState = computerGameState.PlayCard(opponentCard );
+            }while ( computerGameState.TurnEnded() == false );
 
-            userGameState = userGameState.PlayCard( opponentCard );
+            humanGameState = humanGameState.PlayCard( opponentCard );
         }
     }
 
     protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
     {
-        if( oponentCards.GetDragon() != null )
-            return oponentCards.GetDragon();
+        if( computerPlayer.GetCards().GetDragon() != null )
+            return computerPlayer.GetCards().GetDragon();
 
         return ChooseOponentCardToPlay( (GameState)state );
     }
 
     protected Card ChooseOponentCardToPlay( GameStateMagicAttacted state)
     {
-        if( oponentCards.GetStick() != null )
-            return oponentCards.GetStick();
+        if( computerPlayer.GetCards().GetStick() != null )
+            return computerPlayer.GetCards().GetStick();
 
         return ChooseOponentCardToPlay( (GameState)state );
     }
 
     protected Card ChooseOponentCardToPlay( GameState state)
     {
-        if( userQueenCards.size() > 0 ) {
-            if (oponentCards.GetKnight() != null)
-                return oponentCards.GetKnight();
+        if( humanPlayer.GetQueenCards().size() > 0 ) {
+            if (computerPlayer.GetCards().GetKnight() != null)
+                return computerPlayer.GetCards().GetKnight();
 
-            if (oponentCards.GetMagic() != null)
-                return oponentCards.GetMagic();
+            if (computerPlayer.GetCards().GetMagic() != null)
+                return computerPlayer.GetCards().GetMagic();
         }
 
-        if( oponentCards.GetKing() != null )
-            return oponentCards.GetKing();
+        if( computerPlayer.GetCards().GetKing() != null )
+            return computerPlayer.GetCards().GetKing();
 
-        if( oponentCards.GetNumber() != null )
-            return oponentCards.GetNumber();
+        if( computerPlayer.GetCards().GetNumber() != null )
+            return computerPlayer.GetCards().GetNumber();
 
-        return oponentCards.get( 0 );
+        return computerPlayer.GetCards().get( 0 );
     }
 
-    public List<Card> getUserQueenCards() {
-        return userQueenCards;
+    public List<Card> getHumanQueenCards() { return humanPlayer.GetQueenCards();
     }
-    public List<Card> getOponentQueenCards() {
-        return oponentQueenCards;
-    }
-    public List<Card> getUserCards() {
-        return userCards;
+    public List<Card> getComputerQueenCards() {   return computerPlayer.GetQueenCards();}
+    public List<Card> getHumanCards() {
+        return humanPlayer.GetCards();
     }
     public Card getLastCard() {  return lastCard; }
     public Card getBeforeLastCard() {  return beforeLastCard; }
     public int hasWinner()
     {
-        if( userQueenCards.size()>4 )
+        if( humanPlayer.GetQueenCards().size()>4 )
             return 1;
-        else if( oponentQueenCards.size()>4)
+        else if( computerPlayer.GetQueenCards().size()>4)
             return 2;
 
         return 0;

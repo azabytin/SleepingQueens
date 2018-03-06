@@ -6,18 +6,18 @@ package com.example.azabytin.SleepingQueens;
 
 class GameState
 {
-    protected GameLogic.userType userType;
+    protected Player player;
     protected GameLogic gameLogic;
 
     public GameState( GameState state)
     {
-        userType = state.userType;
+        player = state.player;
         gameLogic = state.gameLogic;
     }
 
-    public GameState( GameLogic.userType type, GameLogic logic )
+    public GameState( Player p, GameLogic logic )
     {
-        userType = type;
+        player = p;
         gameLogic = logic;
     }
 
@@ -34,9 +34,9 @@ class GameState
 }
 class GameStateIdle extends GameState
 {
-    public GameStateIdle( GameLogic.userType type, GameLogic logic )
+    public GameStateIdle( Player player, GameLogic logic )
     {
-        super(type, logic);
+        super(player, logic);
     }
 
     public GameStateIdle( GameState state )
@@ -63,9 +63,9 @@ class GameStateIdle extends GameState
 
 class GameStateWaitForСard extends GameState
 {
-    public GameStateWaitForСard( GameLogic.userType type, GameLogic logic )
+    public GameStateWaitForСard( Player player, GameLogic logic )
     {
-        super(type, logic);
+        super(player, logic);
     }
 
     public GameStateWaitForСard(GameState state )
@@ -75,7 +75,7 @@ class GameStateWaitForСard extends GameState
 
     public GameState PlayCard(Card card) {
 
-        if( gameLogic.playCardFromGameState( userType, card ) ){
+        if( gameLogic.playCardFromGameState( player, card ) ){
             return new GameStateWaitForСard( this );
         }
         return new GameStateIdle( this );
@@ -84,9 +84,9 @@ class GameStateWaitForСard extends GameState
 
 class GameStateMagicAttacted extends GameState
 {
-    public GameStateMagicAttacted( GameLogic.userType type, GameLogic logic )
+    public GameStateMagicAttacted( Player player, GameLogic logic )
     {
-        super(type, logic);
+        super(player, logic);
     }
 
     public GameStateMagicAttacted( GameState state )
@@ -97,12 +97,12 @@ class GameStateMagicAttacted extends GameState
     public GameState PlayCard(Card card) {
 
         if (card.isStick()) {
-            gameLogic.removeCard( userType, card);
+            gameLogic.removeCardFromPlayer( card, player);
             return new GameStateWaitForСard( this );
         }
-        gameLogic.getBackQueen( userType );
+        gameLogic.OnGetBackQueen( player );
 
-        if( gameLogic.playCardFromGameState( userType, card ) ){
+        if( gameLogic.playCardFromGameState( player, card ) ){
             return new GameStateWaitForСard( this );
         }
         return new GameStateIdle( this );
@@ -111,9 +111,9 @@ class GameStateMagicAttacted extends GameState
 
 class GameStateKnightAttacked extends GameState
 {
-    public GameStateKnightAttacked( GameLogic.userType type, GameLogic logic )
+    public GameStateKnightAttacked( Player player, GameLogic logic )
     {
-        super(type, logic);
+        super(player, logic);
     }
 
     public GameStateKnightAttacked( GameState state )
@@ -124,12 +124,12 @@ class GameStateKnightAttacked extends GameState
     public GameState PlayCard(Card card) {
 
         if (card.isDragon()) {
-            gameLogic.removeCard( userType, card);
+            gameLogic.removeCardFromPlayer( card, player);
             return new GameStateWaitForСard( this );
         }
-        gameLogic.giveOponentQueen(userType);
+        gameLogic.OnGiveOponentQueen(player);
 
-        if (gameLogic.playCardFromGameState(userType, card)) {
+        if (gameLogic.playCardFromGameState(player, card)) {
             return new GameStateWaitForСard( this );
         }
         return new GameStateIdle( this );
