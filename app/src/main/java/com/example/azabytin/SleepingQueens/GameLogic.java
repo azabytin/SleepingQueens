@@ -2,6 +2,7 @@ package com.example.azabytin.SleepingQueens;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,8 +29,8 @@ public void startNewGame()
     queenCardsStack = new PlayCardsStack( new QueenCardCreater());
     playCardsStack = new PlayCardsStack( new PlayCardCreater());
 
-    Player    humanPlayer = new Player();
-    Player    computerPlayer = new Player( humanPlayer );
+    humanPlayer = new Player();
+    computerPlayer = new Player( humanPlayer );
     humanPlayer.SetOpponent(this.computerPlayer);
 
     refillCardsFromStack( humanPlayer );
@@ -66,53 +67,49 @@ public void startNewGame()
         player.GiveOponentQueen();
     }
 
-    public boolean playCardFromGameState(Player player, Card card )
+    public void playCardFromGameState(Player player, Card card )
     {
         removeCardFromPlayer( card, player);
+        refillCardsFromStack( player );
 
-        boolean hasPair = player.hasThisNumber(card);
-
-        if( !hasPair){
-            refillCardsFromStack( player );
-        }
         if( card.isKing()){
             player.AddQueenCard( queenCardsStack.Get() );
         }
 
-
         if( card.isJocker()){
-            Log.d("GameLogic", "playCardFromGameState() Jocker played");
-
             if(  player.GetLastAddedCard().isOddNumver() ){
-                Log.d("GameLogic", "playCardFromGameState() Jocker played give player queen");
                 player.AddQueenCard( queenCardsStack.Get() );
             }
             if(  player.GetLastAddedCard().isEvenNumver() ){
-                Log.d("GameLogic", "playCardFromGameState() Jocker played give opponent queen");
                 player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
             }
         }
-
-        return hasPair;
     }
 
-    public void userPlayCard( Card userCard)
+    protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
     {
-        humanGameState = humanGameState.PlayCard( userCard );
-
-        if( humanGameState.TurnEnded()  ){
-
-            computerGameState = computerGameState.PlayCard( userCard );
-
-            Card opponentCard;
-            do {
-                opponentCard = ChooseOponentCardToPlay(computerGameState);
-                computerGameState = computerGameState.PlayCard(opponentCard );
-            }while ( computerGameState.TurnEnded() == false );
-
-            humanGameState = humanGameState.PlayCard( opponentCard );
-        }
+        return true;
     }
+
+    public void userPlayCard(ArrayList<Card> cardsToPlay)
+    {
+        computerGameState = computerGameState.PlayCard( cardsToPlay.get(0) );
+
+        if( IsCardsValidToPlay( cardsToPlay ) ){
+            for (Card card: cardsToPlay) {
+                humanGameState = humanGameState.PlayCard( card );
+            }
+        }
+        humanGameState = new GameStateIdle( humanGameState );
+
+          Card opponentCard;
+          do {
+            opponentCard = ChooseOponentCardToPlay(computerGameState);
+            computerGameState = computerGameState.PlayCard(opponentCard );
+          }while ( computerGameState.TurnEnded() == false );
+
+          humanGameState = humanGameState.PlayCard( opponentCard );
+        }
 
     protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
     {

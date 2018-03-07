@@ -75,10 +75,9 @@ class GameStateWaitForСard extends GameState
 
     public GameState PlayCard(Card card) {
 
-        if( gameLogic.playCardFromGameState( player, card ) ){
-            return new GameStateWaitForСard( this );
-        }
-        return new GameStateIdle( this );
+        gameLogic.playCardFromGameState( player, card );
+        return new GameStateWaitForСard( this );
+
     }
 }
 
@@ -102,10 +101,8 @@ class GameStateMagicAttacted extends GameState
         }
         gameLogic.OnGetBackQueen( player );
 
-        if( gameLogic.playCardFromGameState( player, card ) ){
-            return new GameStateWaitForСard( this );
-        }
-        return new GameStateIdle( this );
+        gameLogic.playCardFromGameState( player, card );
+        return new GameStateWaitForСard( this );
     }
 }
 
@@ -129,9 +126,7 @@ class GameStateKnightAttacked extends GameState
         }
         gameLogic.OnGiveOponentQueen(player);
 
-        if (gameLogic.playCardFromGameState(player, card)) {
-            return new GameStateWaitForСard( this );
-        }
-        return new GameStateIdle( this );
+        gameLogic.playCardFromGameState(player, card);
+        return new GameStateWaitForСard( this );
     }
 }

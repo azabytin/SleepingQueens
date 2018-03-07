@@ -205,6 +205,15 @@
             app:layout_constraintTop_toTopOf="parent"
             />
 
+        <Button
+            android:id="@+id/button"
+            android:layout_width="70dp"
+            android:layout_height="42dp"
+            android:text="Ход"
+            android:onClick="onClickPlay"
+            app:layout_constraintStart_toEndOf="@+id/queenCardButton5"
+            tools:layout_editor_absoluteY="0dp" />
+
     </android.support.constraint.ConstraintLayout>
 
 

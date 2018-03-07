@@ -7,6 +7,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected GameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
+    protected ArrayList<Card> cardsToPlay;
 
     protected void setPlayCardButton( int buttonId, Card card )
     {
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         gameLogic = new GameLogic();
         viewToCardHash = new Hashtable<View, Card>();
+        cardsToPlay = new ArrayList<Card>();
 
         gameLogic.startNewGame();
         setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
@@ -61,6 +64,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             button = findViewById( firstButton + i);
             button.setImageResource(cards.get(i).resourceId);
             viewToCardHash.put( button, cards.get( i ));
+            if( cards.get( i ).isMarkedToPlay() )
+            {
+                button.setBackgroundResource( R.color.colorAccent );
+            }
+            else
+            {
+                button.setBackgroundResource( R.color.white);
+            }
         }
         for (; i < 5; i++) {
             button = findViewById( firstButton + i);
@@ -68,10 +79,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    public void onClick( View v) {
 
-        gameLogic.userPlayCard( viewToCardHash.get(v) );
+    public void onClickPlay( View v) {
+        gameLogic.userPlayCard( cardsToPlay );
+        cardsToPlay.clear();
+
         UpdateCardsView();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
@@ -89,6 +101,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             builder.show();
             onStartNewGame();
             UpdateCardsView();
+        }
+    }
+
+        @Override
+    public void onClick( View v) {
+        Card card = viewToCardHash.get(v);
+        card.setMarkedToPlay( !card.isMarkedToPlay() );
+
+        UpdateCardsView();
+
+        if( card.isMarkedToPlay() )  {
+            cardsToPlay.add( card );
+        }
+        else {
+            cardsToPlay.remove( card );
         }
     }
 

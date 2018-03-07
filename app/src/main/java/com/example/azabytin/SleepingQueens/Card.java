@@ -18,21 +18,29 @@ public class Card {
       type = t;
       resourceId = r;
       value = v;
+      markedToPlay = false;
     }
 
     protected int resourceId;
-
     public int getResourceId() {
         return resourceId;
     }
 
     protected int value;
-
     public int getValue() {
         return value;
     }
 
     protected cardType type;
+
+    protected boolean markedToPlay;
+    public boolean isMarkedToPlay() {
+        return markedToPlay;
+    }
+    public void setMarkedToPlay(boolean b) {
+         markedToPlay = b;
+    }
+
 
     public boolean isKnight( ){return type == cardType.knight; };
     public boolean isStick( ){return type == cardType.stick; };
