@@ -91,25 +91,28 @@ public void startNewGame()
         return true;
     }
 
-    public void userPlayCard(ArrayList<Card> cardsToPlay)
+    public boolean userPlayCard(ArrayList<Card> cardsToPlay)
     {
+        if( !IsCardsValidToPlay( cardsToPlay ) )
+            return false;
+
         computerGameState = computerGameState.PlayCard( cardsToPlay.get(0) );
 
-        if( IsCardsValidToPlay( cardsToPlay ) ){
-            for (Card card: cardsToPlay) {
-                humanGameState = humanGameState.PlayCard( card );
-            }
+        for (Card card: cardsToPlay) {
+            humanGameState = humanGameState.PlayCard( card );
         }
+
         humanGameState = new GameStateIdle( humanGameState );
 
-          Card opponentCard;
-          do {
-            opponentCard = ChooseOponentCardToPlay(computerGameState);
-            computerGameState = computerGameState.PlayCard(opponentCard );
-          }while ( computerGameState.TurnEnded() == false );
+        Card opponentCard;
+        opponentCard = ChooseOponentCardToPlay(computerGameState);
+        computerGameState = computerGameState.PlayCard(opponentCard );
+        computerGameState = new GameStateIdle( computerGameState );
 
-          humanGameState = humanGameState.PlayCard( opponentCard );
-        }
+        humanGameState = humanGameState.PlayCard( opponentCard );
+
+        return true;
+    }
 
     protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
     {

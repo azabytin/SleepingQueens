@@ -1,6 +1,7 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +17,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected GameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
+
+    protected Handler timerHandler = new Handler();
+    protected Runnable timerRunnable = new Runnable()  {
+
+        @Override
+        public void run() {
+            UpdateCardsView();
+            timerHandler.postDelayed(this, 300);
+        }
+    };
+
 
     protected void setPlayCardButton( int buttonId, Card card )
     {
@@ -45,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gameLogic.startNewGame();
         setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
         setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
+
+        timerHandler.postDelayed(timerRunnable, 0);
     }
 
     @Override
@@ -80,27 +94,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void onClickPlay( View v) {
-        gameLogic.userPlayCard( cardsToPlay );
-        cardsToPlay.clear();
-
-        UpdateCardsView();
-
+    public void showWinMessage( String message)
+    {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
         builder.setTitle("Игра окончена");
         builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setNeutralButton(android.R.string.ok, null);
-        if(gameLogic.hasWinner() == 1){
-            builder.setMessage("Вы победили!");
-            builder.show();
-            onStartNewGame();
-            UpdateCardsView();
-        }
-        else if (gameLogic.hasWinner() == 2){
-            builder.setMessage("Вы проиграли!");
-            builder.show();
-            onStartNewGame();
-            UpdateCardsView();
+        builder.setMessage(message);
+        builder.show();
+    }
+
+    public void onClickPlay( View v) {
+        if( gameLogic.userPlayCard( cardsToPlay ) ){
+            cardsToPlay.clear();
         }
     }
 
@@ -108,8 +114,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick( View v) {
         Card card = viewToCardHash.get(v);
         card.setMarkedToPlay( !card.isMarkedToPlay() );
-
-        UpdateCardsView();
 
         if( card.isMarkedToPlay() )  {
             cardsToPlay.add( card );
@@ -135,5 +139,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
         setButtonsImages( gameLogic.getComputerQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1 );
+
+        if(gameLogic.hasWinner() == 1){
+            timerHandler.removeCallbacks(timerRunnable);
+            showWinMessage("Вы выиграли");
+            onStartNewGame();
+            UpdateCardsView();
+        }
+        else if (gameLogic.hasWinner() == 2){
+            timerHandler.removeCallbacks(timerRunnable);
+            showWinMessage("Вы проиграли!");
+            onStartNewGame();
+            UpdateCardsView();
+        }
+
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //timerHandler.removeCallbacks(timerRunnable);
+    }
+
 }
+
+
