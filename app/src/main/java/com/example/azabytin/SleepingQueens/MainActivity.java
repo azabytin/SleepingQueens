@@ -8,6 +8,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -17,6 +20,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected GameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
+
+    protected Runnable udpRunnable = new UdpTask();
 
     protected Handler timerHandler = new Handler();
     protected Runnable timerRunnable = new Runnable()  {
@@ -59,6 +64,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
 
         timerHandler.postDelayed(timerRunnable, 0);
+        Thread thread = new Thread(new UdpTask());
+        thread.start();
+        try {
+            thread.join();
+        }
+        catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     @Override
@@ -68,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
         onStartNewGame();
+        //String s = NetUtils.getIPAddress(true);
     }
 
     protected void setButtonsImages( List<Card> cards, int firstButton )

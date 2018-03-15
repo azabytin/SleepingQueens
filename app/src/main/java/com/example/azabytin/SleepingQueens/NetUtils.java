@@ -1,4 +1,4 @@
-/**
+package com.example.azabytin.SleepingQueens; /**
  * Created by azabytin on 14.03.2018.
  */
 
@@ -7,7 +7,7 @@ import java.net.*;
 import java.util.*;
 //import org.apache.http.conn.util.InetAddressUtils;
 
-public class Utils {
+public class NetUtils {
 
     /**
      * Convert byte array to hex string
@@ -90,6 +90,14 @@ public class Utils {
         } catch (IOException ex) {
             return null;
         }*/
+    }
+
+    public static String getNetworkBroadcastAddress() {
+        String addr = getIPAddress( true );
+        int i = addr.lastIndexOf('.');
+        String broadcast = addr.substring(0, i);
+        broadcast = broadcast + ".255";
+        return broadcast;
     }
 
     /**
