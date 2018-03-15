@@ -35,6 +35,7 @@ class UdpTask implements Runnable {
                 s.send(broadcastPkt);
                 byte[]  rxMessage = new byte[100];
                 incomingPkt = new DatagramPacket(rxMessage, rxMessage.length );
+
                 try{
                     s.receive( incomingPkt );
                 }catch(Exception ex){
