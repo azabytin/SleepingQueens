@@ -10,7 +10,7 @@ import java.util.List;
  * Created by azabytin on 16.01.2018.
  */
 
-public class GameLogic {
+public class GameLogic implements iGameLogic {
 
     protected PlayCardsStack playCardsStack;
     protected PlayCardsStack queenCardsStack;
@@ -112,6 +112,19 @@ public void startNewGame()
         humanGameState = humanGameState.PlayCard( opponentCard );
 
         return true;
+    }
+
+    public boolean canOponentPlay(){
+        return humanGameState.getClass().toString().equals("GameStateIdle");
+    }
+
+    public boolean canUserPlay(){
+        return !canOponentPlay();
+    }
+
+
+    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
+
     }
 
     protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)

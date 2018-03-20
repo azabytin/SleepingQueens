@@ -131,5 +131,16 @@ public class NetUtils {
         } catch (Exception ex) { } // for now eat exceptions
         return "";
     }
-
+    public static InetAddress getBroadcast() throws SocketException {
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();) {
+            NetworkInterface ni = niEnum.nextElement();
+            if (!ni.isLoopback()) {
+                for (InterfaceAddress interfaceAddress : ni.getInterfaceAddresses()) {
+                    return interfaceAddress.getBroadcast();
+                }
+            }
+        }
+        return null;
+    }
 }

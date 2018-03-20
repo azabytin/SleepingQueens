@@ -2,10 +2,12 @@ package com.example.azabytin.SleepingQueens;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 
 
 import java.net.DatagramPacket;
@@ -17,11 +19,17 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    protected GameLogic gameLogic;
+    protected iGameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
 
-    protected Runnable udpRunnable = new UdpTask();
+    protected Handler udpHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                int i = msg.arg1;
+
+            }
+    } ;
 
     protected Handler timerHandler = new Handler();
     protected Runnable timerRunnable = new Runnable()  {
@@ -63,13 +71,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
         setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
 
-        timerHandler.postDelayed(timerRunnable, 0);
-        Thread thread = new Thread(new UdpTask());
+        UdpTask udpTask = new UdpTask( udpHandler );
+        Thread thread = new Thread(udpTask);
+
         thread.start();
         try {
             thread.join();
         }
         catch (InterruptedException e) { e.printStackTrace(); }
+
+        timerHandler.postDelayed(timerRunnable, 0);
     }
 
     @Override
@@ -137,6 +148,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void UpdateCardsView()
     {
+        Button playButton = findViewById( R.id.playButton);
+        if( gameLogic.canUserPlay() ){
+            playButton.setEnabled( true);
+        } else {
+            playButton.setEnabled( false);
+        }
+
         setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
 
         if( gameLogic.getLastCard() != null )
@@ -172,7 +190,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
         //timerHandler.removeCallbacks(timerRunnable);
     }
-
+    @Override
+    public void onStop(){
+        super.onStop();
+    }
 }
 
 
