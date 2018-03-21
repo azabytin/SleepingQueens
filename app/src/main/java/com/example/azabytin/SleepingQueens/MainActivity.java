@@ -41,6 +41,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    protected Runnable timerRunnableOponentPlay = new Runnable()  {
+
+        @Override
+        public void run() {
+            if( gameLogic.canOponentPlay() ){
+                gameLogic.oponentPlayCard( new ArrayList<Card>());
+            }
+            timerHandler.postDelayed(this, 3000);
+        }
+    };
+
 
     protected void setPlayCardButton( int buttonId, Card card )
     {

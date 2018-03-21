@@ -16,6 +16,7 @@ public interface iGameLogic {
     public Card getBeforeLastCard();
     public int hasWinner();
     public boolean userPlayCard(ArrayList<Card> cardsToPlay);
+    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay);
     public boolean canOponentPlay();
     public boolean canUserPlay();
 }

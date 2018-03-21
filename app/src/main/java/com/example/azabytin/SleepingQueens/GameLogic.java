@@ -88,6 +88,7 @@ public void startNewGame()
 
     protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
     {
+
         return true;
     }
 
@@ -103,16 +104,33 @@ public void startNewGame()
         }
 
         humanGameState = new GameStateIdle( humanGameState );
-
-        Card opponentCard;
-        opponentCard = ChooseOponentCardToPlay(computerGameState);
-        computerGameState = computerGameState.PlayCard(opponentCard );
-        computerGameState = new GameStateIdle( computerGameState );
-
-        humanGameState = humanGameState.PlayCard( opponentCard );
+        computerGameState = new GameStateWaitForСard( computerGameState );
 
         return true;
     }
+
+    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
+
+        if( cardsToPlay.size() == 0){
+            AiOponent ai = new AiOponent(computerPlayer, humanPlayer);
+            ai.ChooseCardToPlay( computerGameState, cardsToPlay );
+        }
+
+        if( !IsCardsValidToPlay( cardsToPlay ) )
+            return false;
+
+        humanGameState = humanGameState.PlayCard( cardsToPlay.get(0) );
+
+        for (Card card: cardsToPlay) {
+            computerGameState = computerGameState.PlayCard( card );
+        }
+
+        computerGameState= new GameStateIdle( computerGameState);
+        humanGameState = new GameStateWaitForСard( humanGameState  );
+
+        return true;
+    }
+
 
     public boolean canOponentPlay(){
         return humanGameState.getClass().toString().equals("GameStateIdle");
@@ -120,46 +138,6 @@ public void startNewGame()
 
     public boolean canUserPlay(){
         return !canOponentPlay();
-    }
-
-
-    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
-
-    }
-
-    protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
-    {
-        if( computerPlayer.GetCards().GetDragon() != null )
-            return computerPlayer.GetCards().GetDragon();
-
-        return ChooseOponentCardToPlay( (GameState)state );
-    }
-
-    protected Card ChooseOponentCardToPlay( GameStateMagicAttacted state)
-    {
-        if( computerPlayer.GetCards().GetStick() != null )
-            return computerPlayer.GetCards().GetStick();
-
-        return ChooseOponentCardToPlay( (GameState)state );
-    }
-
-    protected Card ChooseOponentCardToPlay( GameState state)
-    {
-        if( humanPlayer.GetQueenCards().size() > 0 ) {
-            if (computerPlayer.GetCards().GetKnight() != null)
-                return computerPlayer.GetCards().GetKnight();
-
-            if (computerPlayer.GetCards().GetMagic() != null)
-                return computerPlayer.GetCards().GetMagic();
-        }
-
-        if( computerPlayer.GetCards().GetKing() != null )
-            return computerPlayer.GetCards().GetKing();
-
-        if( computerPlayer.GetCards().GetNumber() != null )
-            return computerPlayer.GetCards().GetNumber();
-
-        return computerPlayer.GetCards().get( 0 );
     }
 
     public List<Card> getHumanQueenCards() { return humanPlayer.GetQueenCards();
