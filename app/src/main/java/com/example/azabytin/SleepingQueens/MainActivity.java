@@ -84,14 +84,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         UdpTask udpTask = new UdpTask( udpHandler );
         Thread thread = new Thread(udpTask);
-
+/*
         thread.start();
         try {
             thread.join();
         }
         catch (InterruptedException e) { e.printStackTrace(); }
-
+*/
         timerHandler.postDelayed(timerRunnable, 0);
+        timerHandler.postDelayed(timerRunnableOponentPlay, 0);
     }
 
     @Override

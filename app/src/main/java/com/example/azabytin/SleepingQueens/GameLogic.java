@@ -133,7 +133,8 @@ public void startNewGame()
 
 
     public boolean canOponentPlay(){
-        return humanGameState.getClass().toString().equals("GameStateIdle");
+        boolean res =humanGameState.getClass().toString().contains("GameStateIdle");
+        return res;
     }
 
     public boolean canUserPlay(){
