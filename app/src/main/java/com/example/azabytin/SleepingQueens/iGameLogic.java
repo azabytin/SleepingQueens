@@ -12,6 +12,7 @@ public interface iGameLogic {
     public List<Card> getHumanQueenCards();
     public List<Card> getComputerQueenCards();
     public List<Card> getHumanCards();
+    public List<Card> getComputerCards();
     public Card getLastCard();
     public Card getBeforeLastCard();
     public int hasWinner();
