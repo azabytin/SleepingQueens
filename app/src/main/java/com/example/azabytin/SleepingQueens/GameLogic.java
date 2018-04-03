@@ -122,7 +122,7 @@ public void startNewGame()
         humanGameState = humanGameState.PlayCard( cardsToPlay.get(0) );
 
         for (Card card: cardsToPlay) {
-            computerGameState = computerGameState.PlayCard( card );
+           computerGameState = computerGameState.PlayCard( card );
         }
 
         computerGameState= new GameStateIdle( computerGameState);
@@ -141,13 +141,16 @@ public void startNewGame()
         return !canOponentPlay();
     }
 
-    public List<Card> getHumanQueenCards() { return humanPlayer.GetQueenCards();
+    public List<Card> getHumanQueenCards() {
+        return humanPlayer.GetQueenCards();
     }
     public List<Card> getComputerQueenCards() {   return computerPlayer.GetQueenCards();}
+    public List<Card> getComputerCards() {   return computerPlayer.GetCards();}
     public List<Card> getHumanCards() {
         return humanPlayer.GetCards();
     }
-    public Card getLastCard() {  return lastCard; }
+    public Card getLastCard() {  return lastCard;
+    }
     public Card getBeforeLastCard() {  return beforeLastCard; }
     public int hasWinner()
     {
