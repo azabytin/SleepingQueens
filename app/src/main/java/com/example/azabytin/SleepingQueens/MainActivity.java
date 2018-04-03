@@ -9,6 +9,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 
+import lipermi.exception.LipeRMIException;
+import lipermi.handler.CallHandler;
+import lipermi.net.Client;
+import lipermi.net.IServerListener;
+import lipermi.net.Server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -22,11 +27,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected iGameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
+    CallHandler callHandler = new CallHandler();
+    CallHandler clientCallHandler = new CallHandler();
+    Client client;
+    Server server = new Server();
 
     protected Handler udpHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 int i = msg.arg1;
+                if( i == 1 ){
+/*
+                    iGameLogic gameLogic = new GameLogic();
+                    try {
+                        callHandler.registerGlobal(iGameLogic.class, gameLogic);
+                        server.bind(55555, callHandler);
+                        client = new Client("localhost", 55555, callHandler);
+                    }catch (Exception e){}
+*/
+                }
 
             }
     } ;
@@ -74,7 +93,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void onStartNewGame()
     {
-        gameLogic = new GameLogic();
+
+        iGameLogic gameLogicServer = new GameLogic();
+        try {
+            callHandler.registerGlobal(iGameLogic.class, gameLogicServer);
+            server.bind(55555, callHandler);
+            client = new Client("localhost", 55555, callHandler);
+        }catch (Exception e){}
+
+        gameLogic = (iGameLogic) client.getGlobal(iGameLogic.class);
+
         viewToCardHash = new Hashtable<View, Card>();
         cardsToPlay = new ArrayList<Card>();
 
