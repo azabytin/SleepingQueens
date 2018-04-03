@@ -25,6 +25,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     protected iGameLogic gameLogic;
+    protected iGameLogic gameLogicServer;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
     CallHandler callHandler = new CallHandler();
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStartNewGame()
     {
 
-        iGameLogic gameLogicServer = new GameLogic();
+        gameLogicServer = new GameLogic();
         try {
             callHandler.registerGlobal(iGameLogic.class, gameLogicServer);
             server.bind(55555, callHandler);
