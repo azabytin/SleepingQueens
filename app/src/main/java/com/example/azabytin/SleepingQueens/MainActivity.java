@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
     CallHandler callHandler = new CallHandler();
+    CallHandler callHandlerClient = new CallHandler();
+
     CallHandler clientCallHandler = new CallHandler();
     Client client;
     Server server = new Server();
@@ -99,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             callHandler.registerGlobal(iGameLogic.class, gameLogicServer);
             server.bind(55555, callHandler);
-            client = new Client("localhost", 55555, callHandler);
-        }catch (Exception e){}
+            client = new Client("192.168.121.77", 55555, callHandlerClient);
+        }catch (Exception e){ }
 
         gameLogic = (iGameLogic) client.getGlobal(iGameLogic.class);
 
@@ -187,42 +189,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void UpdateCardsView()
-    {
-        Button playButton = findViewById( R.id.playButton);
-        if( gameLogic.canUserPlay() ){
-            playButton.setEnabled( true);
+    protected void UpdateCardsView() {
+        Button playButton = findViewById(R.id.playButton);
+        if (gameLogic != null && gameLogic.canUserPlay()) {
+            playButton.setEnabled(true);
         } else {
-            playButton.setEnabled( false);
+            playButton.setEnabled(false);
         }
 
-        setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
+        try{
+            setButtonsImages(gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
 
-        if( gameLogic.getLastCard() != null )
-            setUsedCardButton( gameLogic.getLastCard().resourceId );
-        else
-            setUsedCardButton( com.example.azabytin.SleepingQueens.R.drawable.back );
+            if (gameLogic.getLastCard() != null)
+                setUsedCardButton(gameLogic.getLastCard().resourceId);
+            else
+                setUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
 
-        if( gameLogic.getBeforeLastCard() != null )
-            setBeforeUsedCardButton( gameLogic.getBeforeLastCard().resourceId );
-        else
-            setBeforeUsedCardButton( com.example.azabytin.SleepingQueens.R.drawable.back );
+            if (gameLogic.getBeforeLastCard() != null)
+                setBeforeUsedCardButton(gameLogic.getBeforeLastCard().resourceId);
+            else
+                setBeforeUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
 
-        setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
-        setButtonsImages( gameLogic.getComputerQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1 );
+            setButtonsImages(gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
+            setButtonsImages(gameLogic.getComputerQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
-        if(gameLogic.hasWinner() == 1){
-            timerHandler.removeCallbacks(timerRunnable);
-            showWinMessage("Вы выиграли");
-            onStartNewGame();
-            UpdateCardsView();
-        }
-        else if (gameLogic.hasWinner() == 2){
-            timerHandler.removeCallbacks(timerRunnable);
-            showWinMessage("Вы проиграли!");
-            onStartNewGame();
-            UpdateCardsView();
-        }
+            if (gameLogic.hasWinner() == 1) {
+                timerHandler.removeCallbacks(timerRunnable);
+                showWinMessage("Вы выиграли");
+                onStartNewGame();
+                UpdateCardsView();
+            } else if (gameLogic.hasWinner() == 2) {
+                timerHandler.removeCallbacks(timerRunnable);
+                showWinMessage("Вы проиграли!");
+                onStartNewGame();
+                UpdateCardsView();
+            }
+        }catch(Exception e){}
 
     }
 
