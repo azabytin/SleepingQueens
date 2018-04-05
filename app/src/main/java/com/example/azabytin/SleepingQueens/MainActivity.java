@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.os.StrictMode;
 
 import lipermi.exception.LipeRMIException;
 import lipermi.handler.CallHandler;
@@ -25,31 +26,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     protected iGameLogic gameLogic;
-    protected iGameLogic gameLogicServer;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
-    CallHandler callHandler = new CallHandler();
-    CallHandler callHandlerClient = new CallHandler();
-
-    CallHandler clientCallHandler = new CallHandler();
-    Client client;
-    Server server = new Server();
 
     protected Handler udpHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
-                int i = msg.arg1;
-                if( i == 1 ){
-/*
-                    iGameLogic gameLogic = new GameLogic();
-                    try {
-                        callHandler.registerGlobal(iGameLogic.class, gameLogic);
-                        server.bind(55555, callHandler);
-                        client = new Client("localhost", 55555, callHandler);
-                    }catch (Exception e){}
-*/
-                }
-
+                gameLogic = (iGameLogic)msg.obj;
+                gameLogic.startNewGame();
             }
     } ;
 
@@ -96,34 +80,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void onStartNewGame()
     {
-
-        gameLogicServer = new GameLogic();
-        try {
-            callHandler.registerGlobal(iGameLogic.class, gameLogicServer);
-            server.bind(55555, callHandler);
-            client = new Client("192.168.121.77", 55555, callHandlerClient);
-        }catch (Exception e){ }
-
-        gameLogic = (iGameLogic) client.getGlobal(iGameLogic.class);
-
         viewToCardHash = new Hashtable<View, Card>();
         cardsToPlay = new ArrayList<Card>();
 
-        gameLogic.startNewGame();
-        setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
-        setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
+        //setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
+        //setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
 
         UdpTask udpTask = new UdpTask( udpHandler );
         Thread thread = new Thread(udpTask);
-/*
+
         thread.start();
-        try {
+/*        try {
             thread.join();
         }
         catch (InterruptedException e) { e.printStackTrace(); }
 */
         timerHandler.postDelayed(timerRunnable, 0);
-        timerHandler.postDelayed(timerRunnableOponentPlay, 0);
+        //timerHandler.postDelayed(timerRunnableOponentPlay, 0);
     }
 
     @Override
@@ -133,7 +106,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
         onStartNewGame();
-        //String s = NetUtils.getIPAddress(true);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     protected void setButtonsImages( List<Card> cards, int firstButton )

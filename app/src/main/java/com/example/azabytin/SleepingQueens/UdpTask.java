@@ -5,6 +5,10 @@ import android.os.Message;
 
 import java.net.DatagramSocket;
 
+import lipermi.handler.CallHandler;
+import lipermi.net.Client;
+import lipermi.net.Server;
+
 /**
  * Created by azabytin on 15.03.2018.
  */
@@ -59,11 +63,34 @@ class UdpTask extends Thread  {
                 gameType = 1;
             }
 
+            CallHandler callHandler = new CallHandler();
+            Client client;
+            Server server;
+            iGameLogic gameLogic = null;
+
+            gameType = 1;
+            if( gameType == 0 ){
+                Thread.sleep(1000);
+                client = new Client(otherHost, 10000, callHandler);
+                iGameLogic clientLogic = (iGameLogic) client.getGlobal(iGameLogic.class);
+                gameLogic = new ClientGameLogic( clientLogic );
+
+            } else {
+                server = new Server();
+                gameLogic = new GameLogic();
+                callHandler.registerGlobal(iGameLogic.class, gameLogic);
+                server.bind(10000, callHandler);
+            }
+
+
             // Sending a message back to the service via handler.
             Message message = uiThreadHandler.obtainMessage();
-            message.obj = otherHost;
-            message.arg1 = gameType;
+            message.obj = gameLogic;
             uiThreadHandler.sendMessage(message);
+
+            while(true){
+                Thread.sleep(1000);
+            }
         }
         catch(Exception ex)
         {
