@@ -64,7 +64,7 @@ class UdpTask extends Thread  {
             }
 
             CallHandler callHandler = new CallHandler();
-            Client client;
+            Client client = null;
             Server server;
             iGameLogic gameLogic = null;
 
@@ -90,6 +90,13 @@ class UdpTask extends Thread  {
 
             while(true){
                 Thread.sleep(1000);
+                if( gameType == 0){
+                    message = uiThreadHandler.obtainMessage();
+                    iGameLogic clientLogic = (iGameLogic) client.getGlobal(iGameLogic.class);
+                    message.obj = new ClientGameLogic( clientLogic );
+                    uiThreadHandler.sendMessage(message);
+                }
+
             }
         }
         catch(Exception ex)

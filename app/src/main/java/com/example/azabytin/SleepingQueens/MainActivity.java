@@ -1,5 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -58,6 +59,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+
+    private class PlayCardsTask extends AsyncTask< ArrayList<Card>, Integer, Boolean>{
+
+        protected Boolean doInBackground(ArrayList<Card>...  cardsToPlay) {
+            return gameLogic.userPlayCard( cardsToPlay[0] ) ;
+        }
+
+        protected void onPostExecute(Boolean result) {
+            if( result){
+                cardsToPlay.clear();
+            }
+        }
+    }
 
     protected void setPlayCardButton( int buttonId, Card card )
     {
@@ -143,9 +157,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onClickPlay( View v) {
-        if( gameLogic.userPlayCard( cardsToPlay ) ){
-            cardsToPlay.clear();
-        }
+        cardsToPlay.clear();
+        new PlayCardsTask().execute( cardsToPlay );
     }
 
         @Override

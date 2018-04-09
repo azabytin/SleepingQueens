@@ -9,34 +9,52 @@ import java.util.List;
 
 public class ClientGameLogic implements iGameLogic {
 
-    protected iGameLogic serverLogic;
+    protected List<Card> ComputerQueenCards;
+    protected List<Card> HumanQueenCards;
+    protected List<Card> HumanCards;
+    protected List<Card> ComputerCards;
+    Card LastCard;
+    Card BeforeLastCard;
+    int hasWinner;
+    boolean canUserPlay;
+    iGameLogic serverLogic;
+
 
     public ClientGameLogic( iGameLogic _serverLogic){
-        serverLogic = _serverLogic;
+        ComputerQueenCards  = _serverLogic.getHumanQueenCards();
+        HumanQueenCards     = _serverLogic.getComputerQueenCards();
+        HumanCards          = _serverLogic.getComputerCards();
+        ComputerCards       = _serverLogic.getHumanCards();
+        LastCard            = _serverLogic.getLastCard();
+        BeforeLastCard      = _serverLogic.getBeforeLastCard();
+        hasWinner           = _serverLogic.hasWinner();
+        canUserPlay         = _serverLogic.canOponentPlay();
+
+        serverLogic         = _serverLogic;
     }
 
     public void startNewGame(){}
 
     public List<Card> getHumanQueenCards(){
-        return serverLogic.getComputerQueenCards();
+        return HumanQueenCards;
     }
     public List<Card> getComputerQueenCards(){
-        return serverLogic.getHumanQueenCards();
+        return ComputerQueenCards;
     }
     public List<Card> getHumanCards(){
-        return serverLogic.getComputerCards();
+        return HumanCards;
     }
     public List<Card> getComputerCards(){
-        return serverLogic.getHumanCards();
+        return ComputerCards;
     }
     public Card getLastCard(){
-        return serverLogic.getLastCard();
+        return LastCard;
     }
     public Card getBeforeLastCard(){
-        return serverLogic.getBeforeLastCard();
+        return BeforeLastCard;
     }
     public int hasWinner(){
-        return serverLogic.hasWinner();
+        return hasWinner;
     }
     public boolean userPlayCard(ArrayList<Card> cardsToPlay){
         return serverLogic.oponentPlayCard( cardsToPlay );
@@ -48,6 +66,6 @@ public class ClientGameLogic implements iGameLogic {
         return false;
     }
     public boolean canUserPlay(){
-        return serverLogic.canOponentPlay();
+        return canUserPlay;
     }
 }
