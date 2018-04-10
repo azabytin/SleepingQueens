@@ -145,7 +145,16 @@ public void startNewGame()
         return humanPlayer.GetQueenCards();
     }
     public List<Card> getComputerQueenCards() {   return computerPlayer.GetQueenCards();}
-    public List<Card> getComputerCards() {   return computerPlayer.GetCards();}
+    public List<Card> getComputerCards() {
+        return computerPlayer.GetCards();
+    }
+
+    public Card[] getComputerCardsArray(){
+        Card[] res = new Card[5];
+        res[ 0 ] = getComputerCards().get(0);
+        return res;
+    }
+
     public List<Card> getHumanCards() {
         return humanPlayer.GetCards();
     }

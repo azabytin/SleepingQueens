@@ -21,19 +21,21 @@ public class ClientGameLogic implements iGameLogic {
 
 
     public ClientGameLogic( iGameLogic _serverLogic){
-        ComputerQueenCards  = _serverLogic.getHumanQueenCards();
-        HumanQueenCards     = _serverLogic.getComputerQueenCards();
-        HumanCards          = _serverLogic.getComputerCards();
-        ComputerCards       = _serverLogic.getHumanCards();
-        LastCard            = _serverLogic.getLastCard();
-        BeforeLastCard      = _serverLogic.getBeforeLastCard();
-        hasWinner           = _serverLogic.hasWinner();
-        canUserPlay         = _serverLogic.canOponentPlay();
+        HumanCards = null;//new  List<Card>;
+        Card[] res = _serverLogic.getComputerCardsArray();
+            ComputerQueenCards = _serverLogic.getHumanQueenCards();
+            HumanQueenCards = _serverLogic.getComputerQueenCards();
+            LastCard = _serverLogic.getLastCard();
+            BeforeLastCard = _serverLogic.getBeforeLastCard();
+            hasWinner = _serverLogic.hasWinner();
+            canUserPlay = _serverLogic.canOponentPlay();
 
+        ComputerCards = _serverLogic.getHumanCards();
         serverLogic         = _serverLogic;
     }
 
     public void startNewGame(){}
+    public Card[] getComputerCardsArray(){return null;}
 
     public List<Card> getHumanQueenCards(){
         return HumanQueenCards;

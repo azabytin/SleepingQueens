@@ -157,21 +157,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onClickPlay( View v) {
-        cardsToPlay.clear();
         new PlayCardsTask().execute( cardsToPlay );
+//        gameLogic.userPlayCard( cardsToPlay ) ;
+//        cardsToPlay.clear();
     }
 
         @Override
     public void onClick( View v) {
-        Card card = viewToCardHash.get(v);
-        card.setMarkedToPlay( !card.isMarkedToPlay() );
+        try {
+            Card card = viewToCardHash.get(v);
+            card.setMarkedToPlay(!card.isMarkedToPlay());
 
-        if( card.isMarkedToPlay() )  {
-            cardsToPlay.add( card );
+            if (card.isMarkedToPlay()) {
+                cardsToPlay.add(card);
+            } else {
+                cardsToPlay.remove(card);
+            }
         }
-        else {
-            cardsToPlay.remove( card );
-        }
+        catch(Exception e)
+            {}
     }
 
     protected void UpdateCardsView() {

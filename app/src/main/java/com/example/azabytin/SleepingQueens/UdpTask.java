@@ -57,18 +57,19 @@ class UdpTask extends Thread  {
             byte otherSideSeed = data[ 0 ];
             otherSideSeed = otherSideSeed;
 
-            int gameType = 0;
+            int gameType = 1;
 
             if( otherSideSeed < broadcastPkt.getSeed() ){
                 gameType = 1;
             }
+            gameType = 0;
 
             CallHandler callHandler = new CallHandler();
             Client client = null;
             Server server;
             iGameLogic gameLogic = null;
 
-            gameType = 1;
+            gameType = 0;
             if( gameType == 0 ){
                 Thread.sleep(1000);
                 client = new Client(otherHost, 10000, callHandler);

@@ -11,6 +11,7 @@ public interface iGameLogic {
     public void startNewGame();
     public List<Card> getHumanQueenCards();
     public List<Card> getComputerQueenCards();
+    public Card[] getComputerCardsArray();
     public List<Card> getHumanCards();
     public List<Card> getComputerCards();
     public Card getLastCard();
