@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
         //setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
 
-        UdpTask udpTask = new UdpTask( udpHandler );
+        UdpTaskSocket udpTask = new UdpTaskSocket( udpHandler );
         Thread thread = new Thread(udpTask);
 
         thread.start();

@@ -19,10 +19,11 @@ public class ClientGameLogic implements iGameLogic {
     boolean canUserPlay;
     iGameLogic serverLogic;
 
+    ArrayList<Card> cardToPlay;
+
 
     public ClientGameLogic( iGameLogic _serverLogic){
-        HumanCards = null;//new  List<Card>;
-        Card[] res = _serverLogic.getComputerCardsArray();
+        HumanCards = _serverLogic.getComputerCards();
             ComputerQueenCards = _serverLogic.getHumanQueenCards();
             HumanQueenCards = _serverLogic.getComputerQueenCards();
             LastCard = _serverLogic.getLastCard();
@@ -32,10 +33,11 @@ public class ClientGameLogic implements iGameLogic {
 
         ComputerCards = _serverLogic.getHumanCards();
         serverLogic         = _serverLogic;
+        cardToPlay = new ArrayList<Card>();
     }
 
     public void startNewGame(){}
-    public Card[] getComputerCardsArray(){return null;}
+    public List<Card> getComputerCardsArray(){return null;}
 
     public List<Card> getHumanQueenCards(){
         return HumanQueenCards;
@@ -58,8 +60,15 @@ public class ClientGameLogic implements iGameLogic {
     public int hasWinner(){
         return hasWinner;
     }
-    public boolean userPlayCard(ArrayList<Card> cardsToPlay){
-        return serverLogic.oponentPlayCard( cardsToPlay );
+    public boolean userPlayCard(ArrayList<Card> _cardsToPlay){
+        cardToPlay.addAll(_cardsToPlay);
+        return true;
+    }
+    public ArrayList<Card> getCardsToPlay(){
+        ArrayList<Card>  res = new ArrayList<Card>();
+        res.addAll(cardToPlay);
+        cardToPlay.clear();
+        return res;
     }
     public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
         return false;

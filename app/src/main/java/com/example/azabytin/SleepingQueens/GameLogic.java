@@ -10,7 +10,7 @@ import java.util.List;
  * Created by azabytin on 16.01.2018.
  */
 
-public class GameLogic implements iGameLogic {
+public class GameLogic implements iGameLogic, java.io.Serializable {
 
     protected PlayCardsStack playCardsStack;
     protected PlayCardsStack queenCardsStack;
@@ -147,12 +147,6 @@ public void startNewGame()
     public List<Card> getComputerQueenCards() {   return computerPlayer.GetQueenCards();}
     public List<Card> getComputerCards() {
         return computerPlayer.GetCards();
-    }
-
-    public Card[] getComputerCardsArray(){
-        Card[] res = new Card[5];
-        res[ 0 ] = getComputerCards().get(0);
-        return res;
     }
 
     public List<Card> getHumanCards() {
