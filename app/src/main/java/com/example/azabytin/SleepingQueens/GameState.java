@@ -4,7 +4,7 @@ package com.example.azabytin.SleepingQueens;
  * Created by azabytin on 19.01.2018.
  */
 
-class GameState
+class GameState implements java.io.Serializable
 {
     protected Player player;
     protected GameLogic gameLogic;

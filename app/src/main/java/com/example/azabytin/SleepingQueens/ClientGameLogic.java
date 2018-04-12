@@ -1,7 +1,10 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.os.Message;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by azabytin on 04.04.2018.
@@ -19,10 +22,15 @@ public class ClientGameLogic implements iGameLogic {
     boolean canUserPlay;
     iGameLogic serverLogic;
 
-    ArrayList<Card> cardToPlay;
+    BlockingQueue<Message> messaQequeue;
 
 
-    public ClientGameLogic( iGameLogic _serverLogic){
+    public ClientGameLogic(BlockingQueue<Message> _messaQequeue)
+    {
+        messaQequeue = _messaQequeue;
+    }
+
+    public void Init( iGameLogic _serverLogic){
         HumanCards = _serverLogic.getComputerCards();
             ComputerQueenCards = _serverLogic.getHumanQueenCards();
             HumanQueenCards = _serverLogic.getComputerQueenCards();
@@ -33,7 +41,6 @@ public class ClientGameLogic implements iGameLogic {
 
         ComputerCards = _serverLogic.getHumanCards();
         serverLogic         = _serverLogic;
-        cardToPlay = new ArrayList<Card>();
     }
 
     public void startNewGame(){}
@@ -61,15 +68,15 @@ public class ClientGameLogic implements iGameLogic {
         return hasWinner;
     }
     public boolean userPlayCard(ArrayList<Card> _cardsToPlay){
-        cardToPlay.addAll(_cardsToPlay);
+
+        ArrayList<Card> tmp = new ArrayList<Card>();
+        tmp.addAll(_cardsToPlay);
+        Message message = new Message();
+        message.obj = tmp;
+        messaQequeue.add( message );
         return true;
     }
-    public ArrayList<Card> getCardsToPlay(){
-        ArrayList<Card>  res = new ArrayList<Card>();
-        res.addAll(cardToPlay);
-        cardToPlay.clear();
-        return res;
-    }
+
     public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
         return false;
     }

@@ -4,7 +4,7 @@ package com.example.azabytin.SleepingQueens;
  * Created by azabytin on 16.01.2018.
  */
 
-public class Card {
+public class Card implements java.io.Serializable{
 
     public enum cardType{number, king, queen, stick, magic, knight, dragon, jocker};
 
@@ -18,7 +18,7 @@ public class Card {
       type = t;
       resourceId = r;
       value = v;
-      markedToPlay = false;
+      //markedToPlay = false;
     }
 
     protected int resourceId;
@@ -33,13 +33,13 @@ public class Card {
 
     protected cardType type;
 
-    protected boolean markedToPlay;
-    public boolean isMarkedToPlay() {
-        return markedToPlay;
-    }
-    public void setMarkedToPlay(boolean b) {
-         markedToPlay = b;
-    }
+//    protected boolean markedToPlay;
+//    public boolean isMarkedToPlay() {
+//        return markedToPlay;
+//    }
+//    public void setMarkedToPlay(boolean b) {
+//         markedToPlay = b;
+//    }
 
 
     public boolean isKnight( ){return type == cardType.knight; };
@@ -66,6 +66,16 @@ public class Card {
     public cardType getType() {
 
         return type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        boolean isEqual=false;
+        if(o!=null && o instanceof Card) {
+            Card card = (Card)o;
+            isEqual=(this.resourceId==card.resourceId) && (this.type==card.type) && (this.value==card.value);
+        }
+        return isEqual;
     }
 
 }

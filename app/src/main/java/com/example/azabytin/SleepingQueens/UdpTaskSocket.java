@@ -10,6 +10,10 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import lipermi.handler.CallHandler;
 import lipermi.net.Client;
@@ -20,6 +24,8 @@ import lipermi.net.Server;
  */
 
 class UdpTaskSocket extends Thread  {
+
+    BlockingQueue<Message> messaQequeue = new LinkedBlockingQueue<Message>();
 
     public UdpTaskSocket( Handler uiThreadHandler_ )
     {
@@ -45,7 +51,7 @@ class UdpTaskSocket extends Thread  {
                 s.send(broadcastPkt.Pkt());
 
                 try{
-                    while( true ) {
+
                         s.receive(incomingPkt.Pkt());
                         if( incomingPkt.isFromMyHost() ){
                             continue;
@@ -54,7 +60,7 @@ class UdpTaskSocket extends Thread  {
                             otherHost = incomingPkt.getOtherHost();
                             s.send(broadcastPkt.Pkt());
                         }
-                    }
+
                 }catch(Exception ex){
                     continue;
                 }
@@ -63,22 +69,23 @@ class UdpTaskSocket extends Thread  {
             byte otherSideSeed = data[ 0 ];
             otherSideSeed = otherSideSeed;
 
-            int gameType = 1;
+            int gameType;
 
             if( otherSideSeed < broadcastPkt.getSeed() ){
                 gameType = 1;
+            }else{
+                gameType = 0;
             }
-            gameType = 0;
 
             CallHandler callHandler = new CallHandler();
             Client client = null;
             Server server;
             GameLogic gameLogic = null;
 
-            //gameType = 0;
+            gameType = 0;//////////////////////////
             if( gameType == 0 ){
                 Thread.sleep(1000);
-                clientLoop();
+                clientLoop(otherHost);
 
             } else {
                 gameLogic = new GameLogic();
@@ -107,31 +114,56 @@ class UdpTaskSocket extends Thread  {
                 ObjectOutputStream  oos = new
                         ObjectOutputStream(sChannel.socket().getOutputStream());
                 oos.writeObject(gameLogic);
+
+                ObjectInputStream ois =
+                        new ObjectInputStream(sChannel.socket().getInputStream());
+                ArrayList<Card> cardsToPlay = (ArrayList<Card>)ois.readObject();
+
+                if( cardsToPlay.size() > 0 ){
+                    Message message = uiThreadHandler.obtainMessage();
+                    message.obj = cardsToPlay;
+                    uiThreadHandler.sendMessage(message);
+                }
+
                 oos.close();
             }
 
         }catch (Exception e){}
     }
 
-    private void clientLoop(){
+    private void clientLoop(String host){
 
+        ClientGameLogic clientLogic = new ClientGameLogic( messaQequeue);
         while(true){
             try{
                 SocketChannel sChannel = SocketChannel.open();
                 sChannel.configureBlocking(true);
-                if (sChannel.connect(new InetSocketAddress("localhost", 50000))) {
+                if (sChannel.connect(new InetSocketAddress(host, 50000))) {
 
                     ObjectInputStream ois =
                             new ObjectInputStream(sChannel.socket().getInputStream());
-
                     GameLogic gameLogic = (GameLogic)ois.readObject();
                     Message message = uiThreadHandler.obtainMessage();
-                    message.obj = new ClientGameLogic( gameLogic );
+                    clientLogic.Init(gameLogic);
+                    message.obj = clientLogic;
                     uiThreadHandler.sendMessage(message);
+
+                    ObjectOutputStream  oos = new
+                            ObjectOutputStream(sChannel.socket().getOutputStream());
+                    Message msg;
+                    ArrayList<Card> cardsToPlay = new ArrayList<Card>();
+                    msg = messaQequeue.poll(100, TimeUnit.MILLISECONDS);
+                    if( msg != null ){
+                        cardsToPlay = (ArrayList<Card>)msg.obj;
+                    }
+                    oos.writeObject(cardsToPlay);
+
                     Thread.sleep(1000);
 
                 }
-            }catch (Exception e){}
+            }catch (Exception e){
+                String s = e.getMessage();
+            }
         }
     }
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Created by azabytin on 31.01.2018.
  */
 
-public class UserCards extends ArrayList<Card> {
+public class UserCards extends ArrayList<Card> implements java.io.Serializable{
 
     public boolean hasThisNumber( Card card){
 

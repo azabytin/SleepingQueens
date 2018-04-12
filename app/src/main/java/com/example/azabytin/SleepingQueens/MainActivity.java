@@ -33,8 +33,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected Handler udpHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
-                gameLogic = (iGameLogic)msg.obj;
-                gameLogic.startNewGame();
+                if( msg.obj instanceof ArrayList){
+                    gameLogic.oponentPlayCard((ArrayList<Card>) msg.obj);
+                }
+                else {
+                    gameLogic = (iGameLogic) msg.obj;
+                    gameLogic.startNewGame();
+                }
             }
     } ;
 
@@ -130,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             button = findViewById( firstButton + i);
             button.setImageResource(cards.get(i).resourceId);
             viewToCardHash.put( button, cards.get( i ));
-            if( cards.get( i ).isMarkedToPlay() )
+            if( cardsToPlay.contains(cards.get( i )))
             {
                 button.setBackgroundResource( R.color.colorAccent );
             }
@@ -166,12 +171,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick( View v) {
         try {
             Card card = viewToCardHash.get(v);
-            card.setMarkedToPlay(!card.isMarkedToPlay());
+//            card.setMarkedToPlay(!card.isMarkedToPlay());
 
-            if (card.isMarkedToPlay()) {
-                cardsToPlay.add(card);
-            } else {
+            if( cardsToPlay.contains(card)){
                 cardsToPlay.remove(card);
+            }else{
+                cardsToPlay.add(card);
             }
         }
         catch(Exception e)
