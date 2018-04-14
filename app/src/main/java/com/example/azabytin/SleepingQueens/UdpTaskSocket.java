@@ -82,14 +82,13 @@ class UdpTaskSocket extends Thread  {
             Server server;
             GameLogic gameLogic = null;
 
-            gameType = 0;//////////////////////////
             if( gameType == 0 ){
                 Thread.sleep(1000);
                 clientLoop(otherHost);
 
             } else {
                 gameLogic = new GameLogic();
-                // Sending a message back to the service via handler.
+
                 Message message = uiThreadHandler.obtainMessage();
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
@@ -104,28 +103,18 @@ class UdpTaskSocket extends Thread  {
 
     private void serverLoop(GameLogic gameLogic){
         try {
-            ServerSocketChannel ssChannel = ServerSocketChannel.open();
-            ssChannel.configureBlocking(true);
-            ssChannel.socket().bind(new InetSocketAddress(50000));
+            ServerSocketSerializer ssChannel = new ServerSocketSerializer();
 
             while (true) {
-                SocketChannel sChannel = ssChannel.accept();
-
-                ObjectOutputStream  oos = new
-                        ObjectOutputStream(sChannel.socket().getOutputStream());
-                oos.writeObject(gameLogic);
-
-                ObjectInputStream ois =
-                        new ObjectInputStream(sChannel.socket().getInputStream());
-                ArrayList<Card> cardsToPlay = (ArrayList<Card>)ois.readObject();
+                ssChannel.accept();
+                ssChannel.writeGameLogic(gameLogic);
+                ArrayList<Card> cardsToPlay = ssChannel.readCardsToPlay();
 
                 if( cardsToPlay.size() > 0 ){
                     Message message = uiThreadHandler.obtainMessage();
                     message.obj = cardsToPlay;
                     uiThreadHandler.sendMessage(message);
                 }
-
-                oos.close();
             }
 
         }catch (Exception e){}
@@ -136,30 +125,17 @@ class UdpTaskSocket extends Thread  {
         ClientGameLogic clientLogic = new ClientGameLogic( messaQequeue);
         while(true){
             try{
-                SocketChannel sChannel = SocketChannel.open();
-                sChannel.configureBlocking(true);
-                if (sChannel.connect(new InetSocketAddress(host, 50000))) {
+                ClientSocketSerializer sChannel = new ClientSocketSerializer();
+                if (sChannel.connect( host)) {
 
-                    ObjectInputStream ois =
-                            new ObjectInputStream(sChannel.socket().getInputStream());
-                    GameLogic gameLogic = (GameLogic)ois.readObject();
+                    GameLogic gameLogic = sChannel.readGameLogic();
                     Message message = uiThreadHandler.obtainMessage();
                     clientLogic.Init(gameLogic);
                     message.obj = clientLogic;
                     uiThreadHandler.sendMessage(message);
 
-                    ObjectOutputStream  oos = new
-                            ObjectOutputStream(sChannel.socket().getOutputStream());
-                    Message msg;
-                    ArrayList<Card> cardsToPlay = new ArrayList<Card>();
-                    msg = messaQequeue.poll(100, TimeUnit.MILLISECONDS);
-                    if( msg != null ){
-                        cardsToPlay = (ArrayList<Card>)msg.obj;
-                    }
-                    oos.writeObject(cardsToPlay);
-
+                    sChannel.writeCardsToPlay( messaQequeue.poll(100, TimeUnit.MILLISECONDS) );
                     Thread.sleep(1000);
-
                 }
             }catch (Exception e){
                 String s = e.getMessage();
@@ -167,5 +143,73 @@ class UdpTaskSocket extends Thread  {
         }
     }
 
+    private class ServerSocketSerializer
+    {
+        private ServerSocketChannel ssChannel;
+        private SocketChannel sChannel;
 
+        public ServerSocketSerializer() throws java.io.IOException
+        {
+
+            ssChannel = ServerSocketChannel.open();
+            ssChannel.configureBlocking(true);
+            ssChannel.socket().bind(new InetSocketAddress(50000));
+        }
+
+        public void accept()throws java.io.IOException
+        {
+            sChannel = ssChannel.accept();
+        }
+
+        public ArrayList<Card> readCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
+        {
+            ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
+            Object o = ois.readObject();
+            ois.close();
+            return (ArrayList<Card>) o;
+        }
+
+        public void writeGameLogic(GameLogic gameLogic) throws java.io.IOException
+        {
+            ObjectOutputStream oos = new
+                    ObjectOutputStream(sChannel.socket().getOutputStream());
+            oos.writeObject(gameLogic);
+            oos.close();
+        }
+    }
+
+    private class ClientSocketSerializer
+    {
+        private SocketChannel sChannel;
+        public ClientSocketSerializer() throws java.io.IOException
+        {
+
+            sChannel = SocketChannel.open();
+            sChannel.configureBlocking(true);
+
+
+        }
+        public boolean connect(String host)throws java.io.IOException
+        {
+            return sChannel.connect(new InetSocketAddress(host, 50000));
+        }
+        public void writeCardsToPlay(Message msg) throws java.io.IOException, java.lang.ClassNotFoundException
+        {
+            ObjectOutputStream  oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
+            ArrayList<Card> cardsToPlay = new ArrayList<Card>();
+            if( msg != null ){
+                cardsToPlay = (ArrayList<Card>)msg.obj;
+            }
+            oos.writeObject(cardsToPlay);
+            oos.close();
+        }
+
+        public GameLogic readGameLogic() throws java.io.IOException, java.lang.ClassNotFoundException
+        {
+            ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
+            GameLogic o = (GameLogic)ois.readObject();
+            ois.close();
+            return o;
+        }
+    }
 }

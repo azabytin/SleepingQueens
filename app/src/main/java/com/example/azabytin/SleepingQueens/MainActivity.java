@@ -102,20 +102,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewToCardHash = new Hashtable<View, Card>();
         cardsToPlay = new ArrayList<Card>();
 
-        //setButtonsImages( gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1 );
-        //setButtonsImages( gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1 );
-
-        UdpTaskSocket udpTask = new UdpTaskSocket( udpHandler );
-        Thread thread = new Thread(udpTask);
-
-        thread.start();
-/*        try {
-            thread.join();
+        if(true) {
+            UdpTaskSocket udpTask = new UdpTaskSocket(udpHandler);
+            Thread thread = new Thread(udpTask);
+            thread.start();
         }
-        catch (InterruptedException e) { e.printStackTrace(); }
-*/
+        else
+        {
+            timerHandler.postDelayed(timerRunnableOponentPlay, 0);
+        }
         timerHandler.postDelayed(timerRunnable, 0);
-        //timerHandler.postDelayed(timerRunnableOponentPlay, 0);
     }
 
     @Override
