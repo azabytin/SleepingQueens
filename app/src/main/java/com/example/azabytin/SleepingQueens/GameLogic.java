@@ -88,8 +88,22 @@ public void startNewGame()
 
     protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
     {
+	if(cardsToPlay.size() == 1){
+		return true;
+	}
 
-        return true;
+	if(cardsToPlay.size() == 2){
+		if( cardsToPlay.get(0).getValue() == cardsToPlay.get(1).getValue() )
+			return true;
+	}
+
+	if(cardsToPlay.size() == 3){
+		if( (cardsToPlay.get(0).getValue() + cardsToPlay.get(1).getValue() ) == cardsToPlay.get(2).getValue() )
+			return true;
+	}
+
+
+        return false;
     }
 
     public boolean userPlayCard(ArrayList<Card> cardsToPlay)

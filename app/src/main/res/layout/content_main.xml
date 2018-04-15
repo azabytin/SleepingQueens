@@ -55,6 +55,17 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/back" />
 
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="64dp"
+            android:layout_marginStart="32dp"
+            android:onClick="onSendfeedbackButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/usedStackImage2"
+            app:srcCompat="@android:drawable/ic_dialog_email" />
+
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -212,7 +223,8 @@
             android:text="Ход"
             android:onClick="onClickPlay"
             app:layout_constraintStart_toEndOf="@+id/queenCardButton5"
-            tools:layout_editor_absoluteY="0dp" />
+            tools:layout_editor_absoluteY="0dp"
+            app:srcCompat="@android:drawable/ic_media_play" />
 
     </android.support.constraint.ConstraintLayout>
 

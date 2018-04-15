@@ -1,5 +1,7 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -57,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void run() {
-            if( gameLogic.canOponentPlay() ){
+            if( gameLogic != null && gameLogic.canOponentPlay() ){
                 gameLogic.oponentPlayCard( new ArrayList<Card>());
             }
             timerHandler.postDelayed(this, 3000);
@@ -102,16 +104,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewToCardHash = new Hashtable<View, Card>();
         cardsToPlay = new ArrayList<Card>();
 
-        if(true) {
-            UdpTaskSocket udpTask = new UdpTaskSocket(udpHandler);
-            Thread thread = new Thread(udpTask);
-            thread.start();
-        }
-        else
-        {
-            timerHandler.postDelayed(timerRunnableOponentPlay, 0);
-        }
+        CharSequence[] items = {"Играть с Андроидом", "Играть по сети вдвоем"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Выбери режим игры");
+
+        DialogInterface.OnClickListener onGameSelection = (a,item)->{
+            if(item==1)
+                OnStartTwoPlayerGame();
+            else
+                OnStartOnePlayerGame();
+        };
+        builder.setItems(items, onGameSelection);
+        builder.setCancelable(false);
+        AlertDialog alert = builder.create();
+        alert.show();
+
         timerHandler.postDelayed(timerRunnable, 0);
+
+    }
+    protected  void OnStartTwoPlayerGame()
+    {
+        UdpTaskSocket udpTask = new UdpTaskSocket(udpHandler);
+        Thread thread = new Thread(udpTask);
+        thread.start();
+    }
+    protected  void OnStartOnePlayerGame()
+    {
+        gameLogic = new GameLogic();
+        gameLogic.startNewGame();
+        timerHandler.postDelayed(timerRunnableOponentPlay, 0);
     }
 
     @Override
@@ -226,6 +247,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onStop(){
         super.onStop();
+    }
+
+    public void onSendfeedbackButton(View v)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
+        builder.setTitle("Отправка отзыва");
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setNeutralButton(android.R.string.ok, null);
+        builder.setMessage("Для отправки отзыва нужно выбрать Gmail");
+        builder.show();
+
+        Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
+        feedbackEmail.setType("text/email");
+        feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
+        feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+        startActivity(Intent.createChooser(feedbackEmail, "Send Feedback:"));
+
     }
 }
 

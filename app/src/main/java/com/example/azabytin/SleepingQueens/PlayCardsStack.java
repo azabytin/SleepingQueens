@@ -14,11 +14,10 @@ public class PlayCardsStack  implements java.io.Serializable{
 
     public PlayCardsStack( CardCreater с ){
         cardCreater = с;
-        cards = cardCreater.createPlayCards();
     }
 
     public Card Get(){
-        if(  cards.size() == 0 ){
+        if( cards==null || cards.size() == 0 ){
             cards = cardCreater.createPlayCards();
             Collections.shuffle( cards );
         }
