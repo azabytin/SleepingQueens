@@ -125,20 +125,17 @@ class UdpTaskSocket extends Thread  {
     private void clientLoop(String host){
 
         ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
+        ClientSocketSerializer sChannel = new ClientSocketSerializer(host);
         while(true){
             try{
-                ClientSocketSerializer sChannel = new ClientSocketSerializer();
-                if (sChannel.connect( host)) {
+                GameLogic gameLogic = sChannel.readGameLogic();
+                Message message = uiThreadHandler.obtainMessage();
+                clientLogic.Init(gameLogic);
+                message.obj = clientLogic;
+                uiThreadHandler.sendMessage(message);
 
-                    GameLogic gameLogic = sChannel.readGameLogic();
-                    Message message = uiThreadHandler.obtainMessage();
-                    clientLogic.Init(gameLogic);
-                    message.obj = clientLogic;
-                    uiThreadHandler.sendMessage(message);
-
-                    sChannel.writeCardsToPlay( messageQueue.poll(100, TimeUnit.MILLISECONDS) );
-                    Thread.sleep(300);
-                }
+                sChannel.writeCardsToPlay( messageQueue.poll(100, TimeUnit.MILLISECONDS) );
+                Thread.sleep(300);
             }catch (Exception e){
                 String s = e.getMessage();
             }
@@ -149,6 +146,8 @@ class UdpTaskSocket extends Thread  {
     {
         private ServerSocketChannel ssChannel;
         private SocketChannel sChannel;
+        private ObjectOutputStream  oos = null;
+        private ObjectInputStream ois = null;
 
         public ServerSocketSerializer() throws java.io.IOException
         {
@@ -165,15 +164,17 @@ class UdpTaskSocket extends Thread  {
 
         public ArrayList<Card> readCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
         {
-            ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
+            if(ois == null)
+                ois = new ObjectInputStream(sChannel.socket().getInputStream());
+
             Object o = ois.readObject();
             return (ArrayList<Card>) o;
         }
 
         public void writeGameLogic(GameLogic gameLogic) throws java.io.IOException
         {
-            ObjectOutputStream oos = new
-                    ObjectOutputStream(sChannel.socket().getOutputStream());
+            if( oos == null )
+            oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
             oos.writeObject(gameLogic);
         }
     }
@@ -181,21 +182,22 @@ class UdpTaskSocket extends Thread  {
     private class ClientSocketSerializer
     {
         private SocketChannel sChannel;
-        public ClientSocketSerializer() throws java.io.IOException
+        private ObjectOutputStream  oos = null;
+        private ObjectInputStream ois = null;
+
+        public ClientSocketSerializer( String host) throws java.io.IOException
         {
 
             sChannel = SocketChannel.open();
             sChannel.configureBlocking(true);
-
-
+            sChannel.connect(new InetSocketAddress(host, 50000));
         }
-        public boolean connect(String host)throws java.io.IOException
-        {
-            return sChannel.connect(new InetSocketAddress(host, 50000));
-        }
+
         public void writeCardsToPlay(Message msg) throws java.io.IOException, java.lang.ClassNotFoundException
         {
-            ObjectOutputStream  oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
+            if( oos == null )
+                oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
+
             ArrayList<Card> cardsToPlay = new ArrayList<Card>();
             if( msg != null ){
                 cardsToPlay = (ArrayList<Card>)msg.obj;
@@ -205,7 +207,9 @@ class UdpTaskSocket extends Thread  {
 
         public GameLogic readGameLogic() throws java.io.IOException, java.lang.ClassNotFoundException
         {
-            ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
+            if(ois == null)
+                ois = new ObjectInputStream(sChannel.socket().getInputStream());
+
             GameLogic o = (GameLogic)ois.readObject();
             return o;
         }
