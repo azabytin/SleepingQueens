@@ -99,6 +99,9 @@ public void startNewGame()
                 return true;
         }
 
+        if(cardsToPlay.size() == 0){
+            return false;
+        }
         return false;
     }
 
