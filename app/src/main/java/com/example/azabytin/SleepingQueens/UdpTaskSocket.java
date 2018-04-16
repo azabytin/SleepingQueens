@@ -3,7 +3,6 @@ package com.example.azabytin.SleepingQueens;
 import android.os.Handler;
 import android.os.Message;
 
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
@@ -25,7 +24,7 @@ import lipermi.net.Server;
 
 class UdpTaskSocket extends Thread  {
 
-    BlockingQueue<Message> messaQequeue = new LinkedBlockingQueue<Message>();
+    protected BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
 
     public UdpTaskSocket( Handler uiThreadHandler_ )
     {
@@ -117,12 +116,15 @@ class UdpTaskSocket extends Thread  {
                 }
             }
 
-        }catch (Exception e){}
+        }
+        catch (Exception e){
+            String s = e.getMessage();
+        }
     }
 
     private void clientLoop(String host){
 
-        ClientGameLogic clientLogic = new ClientGameLogic( messaQequeue);
+        ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
         while(true){
             try{
                 ClientSocketSerializer sChannel = new ClientSocketSerializer();
@@ -134,8 +136,8 @@ class UdpTaskSocket extends Thread  {
                     message.obj = clientLogic;
                     uiThreadHandler.sendMessage(message);
 
-                    sChannel.writeCardsToPlay( messaQequeue.poll(100, TimeUnit.MILLISECONDS) );
-                    Thread.sleep(1000);
+                    sChannel.writeCardsToPlay( messageQueue.poll(100, TimeUnit.MILLISECONDS) );
+                    Thread.sleep(300);
                 }
             }catch (Exception e){
                 String s = e.getMessage();
@@ -165,7 +167,6 @@ class UdpTaskSocket extends Thread  {
         {
             ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
             Object o = ois.readObject();
-            ois.close();
             return (ArrayList<Card>) o;
         }
 
@@ -174,7 +175,6 @@ class UdpTaskSocket extends Thread  {
             ObjectOutputStream oos = new
                     ObjectOutputStream(sChannel.socket().getOutputStream());
             oos.writeObject(gameLogic);
-            oos.close();
         }
     }
 
@@ -201,14 +201,12 @@ class UdpTaskSocket extends Thread  {
                 cardsToPlay = (ArrayList<Card>)msg.obj;
             }
             oos.writeObject(cardsToPlay);
-            oos.close();
         }
 
         public GameLogic readGameLogic() throws java.io.IOException, java.lang.ClassNotFoundException
         {
             ObjectInputStream ois = new ObjectInputStream(sChannel.socket().getInputStream());
             GameLogic o = (GameLogic)ois.readObject();
-            ois.close();
             return o;
         }
     }

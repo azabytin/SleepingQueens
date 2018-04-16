@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected iGameLogic gameLogic;
     protected Hashtable< View, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
+    UdpTaskSocket udpTask = null;
 
     protected Handler udpHandler = new Handler(){
             @Override
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if( gameLogic != null && gameLogic.canOponentPlay() ){
                 gameLogic.oponentPlayCard( new ArrayList<Card>());
             }
-            timerHandler.postDelayed(this, 3000);
+            timerHandler.postDelayed(this, 2000);
         }
     };
 
@@ -104,6 +105,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewToCardHash = new Hashtable<View, Card>();
         cardsToPlay = new ArrayList<Card>();
 
+        if( udpTask != null ){
+            udpTask.interrupt();
+        }
+
         CharSequence[] items = {"Играть с Андроидом", "Играть по сети вдвоем"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Выбери режим игры");
@@ -124,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     protected  void OnStartTwoPlayerGame()
     {
-        UdpTaskSocket udpTask = new UdpTaskSocket(udpHandler);
+        udpTask = new UdpTaskSocket(udpHandler);
         Thread thread = new Thread(udpTask);
         thread.start();
     }
@@ -180,8 +185,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void onClickPlay( View v) {
         new PlayCardsTask().execute( cardsToPlay );
-//        gameLogic.userPlayCard( cardsToPlay ) ;
-//        cardsToPlay.clear();
     }
 
         @Override
