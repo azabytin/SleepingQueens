@@ -18,7 +18,7 @@ public class ClientGameLogic implements iGameLogic {
     protected List<Card> ComputerCards;
     Card LastCard;
     Card BeforeLastCard;
-    int hasWinner;
+    iGameLogic.Winner whoWinner;
     boolean canUserPlay;
     iGameLogic serverLogic;
 
@@ -31,31 +31,31 @@ public class ClientGameLogic implements iGameLogic {
     }
 
     public void Init( iGameLogic _serverLogic){
-        HumanCards = _serverLogic.getComputerCards();
-            ComputerQueenCards = _serverLogic.getHumanQueenCards();
-            HumanQueenCards = _serverLogic.getComputerQueenCards();
+        HumanCards = _serverLogic.getOpponentCards();
+            ComputerQueenCards = _serverLogic.getPlayerQueenCards();
+            HumanQueenCards = _serverLogic.getOpponentQueenCards();
             LastCard = _serverLogic.getLastCard();
             BeforeLastCard = _serverLogic.getBeforeLastCard();
-            hasWinner = _serverLogic.hasWinner();
+            whoWinner = _serverLogic.whoIsWinner();
             canUserPlay = _serverLogic.canOponentPlay();
 
-        ComputerCards = _serverLogic.getHumanCards();
+        ComputerCards = _serverLogic.getPlayerCards();
         serverLogic         = _serverLogic;
     }
 
     public void startNewGame(){}
     public List<Card> getComputerCardsArray(){return null;}
 
-    public List<Card> getHumanQueenCards(){
+    public List<Card> getPlayerQueenCards(){
         return HumanQueenCards;
     }
-    public List<Card> getComputerQueenCards(){
+    public List<Card> getOpponentQueenCards(){
         return ComputerQueenCards;
     }
-    public List<Card> getHumanCards(){
+    public List<Card> getPlayerCards(){
         return HumanCards;
     }
-    public List<Card> getComputerCards(){
+    public List<Card> getOpponentCards(){
         return ComputerCards;
     }
     public Card getLastCard(){
@@ -64,10 +64,16 @@ public class ClientGameLogic implements iGameLogic {
     public Card getBeforeLastCard(){
         return BeforeLastCard;
     }
-    public int hasWinner(){
-        return hasWinner;
+    public iGameLogic.Winner whoIsWinner(){
+        if( whoWinner == Winner.PlayerWinner )
+            return Winner.OpponentWinner;
+
+        if( whoWinner == Winner.OpponentWinner)
+            return Winner.PlayerWinner;
+
+        return whoWinner;
     }
-    public boolean userPlayCard(ArrayList<Card> _cardsToPlay){
+    public boolean userPlayCards(ArrayList<Card> _cardsToPlay){
 
         ArrayList<Card> tmp = new ArrayList<Card>();
         tmp.addAll(_cardsToPlay);
@@ -77,7 +83,7 @@ public class ClientGameLogic implements iGameLogic {
         return true;
     }
 
-    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
+    public boolean oponentPlayCards(ArrayList<Card> cardsToPlay){
         return false;
     }
     public boolean canOponentPlay(){

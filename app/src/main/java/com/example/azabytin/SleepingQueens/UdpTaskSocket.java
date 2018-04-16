@@ -37,61 +37,49 @@ class UdpTaskSocket extends Thread  {
     @Override
     public void run() {
         try {
+            DatagramSocket udpSocketForNegotiation = new DatagramSocket(55555);
+            udpSocketForNegotiation.setSoTimeout(100);
 
-            DatagramSocket s = new DatagramSocket(55555);
-            s.setSoTimeout(100);
-
-            NegotiationPkt broadcastPkt = new NegotiationPkt( true );
-            NegotiationPkt incomingPkt = new NegotiationPkt( false);;
+            NegotiationPkt broadcastRequestPkt = new NegotiationPkt( true );
+            NegotiationPkt responsePkt = new NegotiationPkt( false);;
 
             boolean waitingResponse = true;
-            String otherHost = "";
             while ( waitingResponse ) {
-                s.send(broadcastPkt.Pkt());
+                udpSocketForNegotiation.send(broadcastRequestPkt.Pkt());
 
                 try{
-
-                        s.receive(incomingPkt.Pkt());
-                        if( incomingPkt.isFromMyHost() ){
+                        udpSocketForNegotiation.receive(responsePkt.Pkt());
+                        if( responsePkt.isFromMyHost() ){
                             continue;
                         } else {
                             waitingResponse = false;
-                            otherHost = incomingPkt.getOtherHost();
-                            s.send(broadcastPkt.Pkt());
+                            udpSocketForNegotiation.send(broadcastRequestPkt.Pkt());
                         }
 
                 }catch(Exception ex){
                     continue;
                 }
             }
-            byte[] data =  incomingPkt.Pkt().getData();
-            byte otherSideSeed = data[ 0 ];
-            otherSideSeed = otherSideSeed;
 
-            int gameType;
-
-            if( otherSideSeed < broadcastPkt.getSeed() ){
-                gameType = 1;
-            }else{
-                gameType = 0;
+            boolean workAsServer = false;
+            if( NegotiationPkt.isIamServer( broadcastRequestPkt, responsePkt) ){
+                workAsServer = true;
             }
 
-            CallHandler callHandler = new CallHandler();
-            Client client = null;
-            Server server;
             GameLogic gameLogic = null;
-
-            if( gameType == 0 ){
-                Thread.sleep(1000);
-                clientLoop(otherHost);
-
-            } else {
+            if( workAsServer  ){
                 gameLogic = new GameLogic();
 
                 Message message = uiThreadHandler.obtainMessage();
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
+
                 serverLoop(gameLogic);
+            }
+            else {
+                Thread.sleep(1000);
+
+                clientLoop( responsePkt.getOtherHost() );
             }
         }
         catch(Exception ex)
@@ -102,12 +90,12 @@ class UdpTaskSocket extends Thread  {
 
     private void serverLoop(GameLogic gameLogic){
         try {
-            ServerSocketSerializer ssChannel = new ServerSocketSerializer();
+            ServerSocketSerializer serverSerializer = new ServerSocketSerializer();
 
             while (true) {
-                ssChannel.accept();
-                ssChannel.writeGameLogic(gameLogic);
-                ArrayList<Card> cardsToPlay = ssChannel.readCardsToPlay();
+                serverSerializer.accept();
+                serverSerializer.writeGameLogic(gameLogic);
+                ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
 
                 if( cardsToPlay.size() > 0 ){
                     Message message = uiThreadHandler.obtainMessage();
@@ -115,7 +103,6 @@ class UdpTaskSocket extends Thread  {
                     uiThreadHandler.sendMessage(message);
                 }
             }
-
         }
         catch (Exception e){
             String s = e.getMessage();
@@ -125,17 +112,20 @@ class UdpTaskSocket extends Thread  {
     private void clientLoop(String host){
 
         ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
-        ClientSocketSerializer sChannel = new ClientSocketSerializer(host);
         while(true){
             try{
-                GameLogic gameLogic = sChannel.readGameLogic();
-                Message message = uiThreadHandler.obtainMessage();
-                clientLogic.Init(gameLogic);
-                message.obj = clientLogic;
-                uiThreadHandler.sendMessage(message);
+                ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
+                if( clientSerializer.connect(host) ) {
+                    GameLogic gameLogic = clientSerializer.readGameLogic();
+                    Message message = uiThreadHandler.obtainMessage();
+                    clientLogic.Init(gameLogic);
+                    message.obj = clientLogic;
+                    uiThreadHandler.sendMessage(message);
 
-                sChannel.writeCardsToPlay( messageQueue.poll(100, TimeUnit.MILLISECONDS) );
+                    clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
+                }
                 Thread.sleep(300);
+                clientSerializer.clean();
             }catch (Exception e){
                 String s = e.getMessage();
             }
@@ -159,6 +149,10 @@ class UdpTaskSocket extends Thread  {
 
         public void accept()throws java.io.IOException
         {
+            try{
+                clean();
+            } catch (Exception e){}
+
             sChannel = ssChannel.accept();
         }
 
@@ -174,23 +168,39 @@ class UdpTaskSocket extends Thread  {
         public void writeGameLogic(GameLogic gameLogic) throws java.io.IOException
         {
             if( oos == null )
-            oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
+                oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
             oos.writeObject(gameLogic);
+        }
+        public void clean() throws java.io.IOException
+        {
+            if( oos != null ) {
+                oos.close();
+            }
+            if( ois != null ){
+                ois.close();
+            }
+            if(sChannel != null){
+                sChannel.close();
+            }
         }
     }
 
     private class ClientSocketSerializer
     {
-        private SocketChannel sChannel;
+        private SocketChannel sChannel = null;
         private ObjectOutputStream  oos = null;
         private ObjectInputStream ois = null;
 
-        public ClientSocketSerializer( String host) throws java.io.IOException
+        public ClientSocketSerializer( ) throws java.io.IOException
         {
 
             sChannel = SocketChannel.open();
             sChannel.configureBlocking(true);
-            sChannel.connect(new InetSocketAddress(host, 50000));
+        }
+
+        public boolean connect( String host) throws java.io.IOException
+        {
+            return  sChannel.connect(new InetSocketAddress(host, 50000));
         }
 
         public void writeCardsToPlay(Message msg) throws java.io.IOException, java.lang.ClassNotFoundException
@@ -212,6 +222,19 @@ class UdpTaskSocket extends Thread  {
 
             GameLogic o = (GameLogic)ois.readObject();
             return o;
+        }
+
+        public void clean() throws java.io.IOException
+        {
+            if( oos != null ) {
+                oos.close();
+            }
+            if( ois != null ){
+                ois.close();
+            }
+            if(sChannel != null){
+                sChannel.close();
+            }
         }
     }
 }

@@ -8,16 +8,23 @@ import java.util.List;
  */
 
 public interface iGameLogic {
+    enum Winner
+    {
+        PlayerWinner,
+        OpponentWinner,
+        NoWinner
+    }
+
     public void startNewGame();
-    public List<Card> getHumanQueenCards();
-    public List<Card> getComputerQueenCards();
-    public List<Card> getHumanCards();
-    public List<Card> getComputerCards();
+    public List<Card> getPlayerQueenCards();
+    public List<Card> getOpponentQueenCards();
+    public List<Card> getPlayerCards();
+    public List<Card> getOpponentCards();
     public Card getLastCard();
     public Card getBeforeLastCard();
-    public int hasWinner();
-    public boolean userPlayCard(ArrayList<Card> cardsToPlay);
-    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay);
+    public Winner whoIsWinner();
+    public boolean userPlayCards(ArrayList<Card> cardsToPlay);
+    public boolean oponentPlayCards(ArrayList<Card> cardsToPlay);
     public boolean canOponentPlay();
     public boolean canUserPlay();
 }

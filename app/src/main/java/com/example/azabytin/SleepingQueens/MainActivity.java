@@ -11,17 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
-import android.os.StrictMode;
 
-import lipermi.exception.LipeRMIException;
-import lipermi.handler.CallHandler;
-import lipermi.net.Client;
-import lipermi.net.IServerListener;
-import lipermi.net.Server;
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -37,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void handleMessage(Message msg) {
                 if( msg.obj instanceof ArrayList){
-                    gameLogic.oponentPlayCard((ArrayList<Card>) msg.obj);
+                    gameLogic.oponentPlayCards((ArrayList<Card>) msg.obj);
                 }
                 else {
                     gameLogic = (iGameLogic) msg.obj;
@@ -61,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
             if( gameLogic != null && gameLogic.canOponentPlay() ){
-                gameLogic.oponentPlayCard( new ArrayList<Card>());
+                gameLogic.oponentPlayCards( new ArrayList<Card>());
             }
             timerHandler.postDelayed(this, 2000);
         }
@@ -71,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private class PlayCardsTask extends AsyncTask< ArrayList<Card>, Integer, Boolean>{
 
         protected Boolean doInBackground(ArrayList<Card>...  cardsToPlay) {
-            return gameLogic.userPlayCard( cardsToPlay[0] ) ;
+            return gameLogic.userPlayCards( cardsToPlay[0] ) ;
         }
 
         protected void onPostExecute(Boolean result) {
@@ -123,9 +113,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder.setCancelable(false);
         AlertDialog alert = builder.create();
         alert.show();
-
-        timerHandler.postDelayed(timerRunnable, 0);
-
     }
     protected  void OnStartTwoPlayerGame()
     {
@@ -146,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(com.example.azabytin.SleepingQueens.R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
+        timerHandler.postDelayed(timerRunnable, 0);
         onStartNewGame();
     }
 
@@ -191,7 +179,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick( View v) {
         try {
             Card card = viewToCardHash.get(v);
-//            card.setMarkedToPlay(!card.isMarkedToPlay());
 
             if( cardsToPlay.contains(card)){
                 cardsToPlay.remove(card);
@@ -212,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         try{
-            setButtonsImages(gameLogic.getHumanCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
+            setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
 
             if (gameLogic.getLastCard() != null)
                 setUsedCardButton(gameLogic.getLastCard().resourceId);
@@ -224,15 +211,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             else
                 setBeforeUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
 
-            setButtonsImages(gameLogic.getHumanQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
-            setButtonsImages(gameLogic.getComputerQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
+            setButtonsImages(gameLogic.getPlayerQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
+            setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
-            if (gameLogic.hasWinner() == 1) {
+            if (gameLogic.whoIsWinner() == iGameLogic.Winner.PlayerWinner) {
                 timerHandler.removeCallbacks(timerRunnable);
                 showWinMessage("Вы выиграли");
                 onStartNewGame();
                 UpdateCardsView();
-            } else if (gameLogic.hasWinner() == 2) {
+            } else if (gameLogic.whoIsWinner() == iGameLogic.Winner.OpponentWinner) {
                 timerHandler.removeCallbacks(timerRunnable);
                 showWinMessage("Вы проиграли!");
                 onStartNewGame();

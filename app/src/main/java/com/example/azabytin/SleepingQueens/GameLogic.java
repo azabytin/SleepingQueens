@@ -1,9 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
-import android.util.Log;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,8 +15,8 @@ public class GameLogic implements iGameLogic, java.io.Serializable {
     Card lastCard;
     Card beforeLastCard;
 
-    protected GameState humanGameState;
-    protected GameState computerGameState;
+    protected GameState playerGameState;
+    protected GameState opponentGameState;
     protected Player humanPlayer;
     protected Player computerPlayer;
 
@@ -36,8 +33,8 @@ public void startNewGame()
     refillCardsFromStack( humanPlayer );
     refillCardsFromStack( computerPlayer );
 
-    humanGameState = new GameStateWaitForСard(humanPlayer, this );
-    computerGameState = new GameStateIdle(computerPlayer, this);
+    playerGameState = new GameStateWaitForСard(humanPlayer, this );
+    opponentGameState = new GameStateIdle(computerPlayer, this);
 }
 
     protected void refillCardsFromStack(Player player){
@@ -88,66 +85,65 @@ public void startNewGame()
 
     protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
     {
-	if(cardsToPlay.size() == 1){
-		return true;
-	}
+        if(cardsToPlay.size() == 1){
+            return true;
+        }
 
-	if(cardsToPlay.size() == 2){
-		if( cardsToPlay.get(0).getValue() == cardsToPlay.get(1).getValue() )
-			return true;
-	}
+        if(cardsToPlay.size() == 2){
+            if( cardsToPlay.get(0).getValue() == cardsToPlay.get(1).getValue() )
+                return true;
+        }
 
-	if(cardsToPlay.size() == 3){
-		if( (cardsToPlay.get(0).getValue() + cardsToPlay.get(1).getValue() ) == cardsToPlay.get(2).getValue() )
-			return true;
-	}
-
+        if(cardsToPlay.size() == 3){
+            if( (cardsToPlay.get(0).getValue() + cardsToPlay.get(1).getValue() ) == cardsToPlay.get(2).getValue() )
+                return true;
+        }
 
         return false;
     }
 
-    public boolean userPlayCard(ArrayList<Card> cardsToPlay)
+    public boolean userPlayCards(ArrayList<Card> cardsToPlay)
     {
         if( !IsCardsValidToPlay( cardsToPlay ) )
             return false;
 
-        computerGameState = computerGameState.PlayCard( cardsToPlay.get(0) );
+        opponentGameState = opponentGameState.PlayCard( cardsToPlay.get(0) );
 
         for (Card card: cardsToPlay) {
-            humanGameState = humanGameState.PlayCard( card );
+            playerGameState = playerGameState.PlayCard( card );
         }
 
-        humanGameState = new GameStateIdle( humanGameState );
-        computerGameState = new GameStateWaitForСard( computerGameState );
+        playerGameState = new GameStateIdle(playerGameState);
+        opponentGameState = new GameStateWaitForСard(opponentGameState);
 
         return true;
     }
 
-    public boolean oponentPlayCard(ArrayList<Card> cardsToPlay){
+    public boolean oponentPlayCards(ArrayList<Card> cardsToPlay){
 
         if( cardsToPlay.size() == 0){
             AiOponent ai = new AiOponent(computerPlayer, humanPlayer);
-            ai.ChooseCardToPlay( computerGameState, cardsToPlay );
+            ai.ChooseCardToPlay(opponentGameState, cardsToPlay );
         }
 
         if( !IsCardsValidToPlay( cardsToPlay ) )
             return false;
 
-        humanGameState = humanGameState.PlayCard( cardsToPlay.get(0) );
+        playerGameState = playerGameState.PlayCard( cardsToPlay.get(0) );
 
         for (Card card: cardsToPlay) {
-           computerGameState = computerGameState.PlayCard( card );
+           opponentGameState = opponentGameState.PlayCard( card );
         }
 
-        computerGameState= new GameStateIdle( computerGameState);
-        humanGameState = new GameStateWaitForСard( humanGameState  );
+        opponentGameState = new GameStateIdle(opponentGameState);
+        playerGameState = new GameStateWaitForСard(playerGameState);
 
         return true;
     }
 
 
     public boolean canOponentPlay(){
-        boolean res =humanGameState.getClass().toString().contains("GameStateIdle");
+        boolean res = playerGameState.getClass().toString().contains("GameStateIdle");
         return res;
     }
 
@@ -155,27 +151,27 @@ public void startNewGame()
         return !canOponentPlay();
     }
 
-    public List<Card> getHumanQueenCards() {
+    public List<Card> getPlayerQueenCards() {
         return humanPlayer.GetQueenCards();
     }
-    public List<Card> getComputerQueenCards() {   return computerPlayer.GetQueenCards();}
-    public List<Card> getComputerCards() {
+    public List<Card> getOpponentQueenCards() {   return computerPlayer.GetQueenCards();}
+    public List<Card> getOpponentCards() {
         return computerPlayer.GetCards();
     }
 
-    public List<Card> getHumanCards() {
+    public List<Card> getPlayerCards() {
         return humanPlayer.GetCards();
     }
     public Card getLastCard() {  return lastCard;
     }
     public Card getBeforeLastCard() {  return beforeLastCard; }
-    public int hasWinner()
+    public iGameLogic.Winner whoIsWinner()
     {
         if( humanPlayer.GetQueenCards().size()>4 )
-            return 1;
+            return Winner.PlayerWinner;
         else if( computerPlayer.GetQueenCards().size()>4)
-            return 2;
+            return Winner.OpponentWinner;
 
-        return 0;
+        return Winner.NoWinner;
     }
 }

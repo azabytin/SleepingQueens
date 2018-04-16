@@ -15,13 +15,12 @@ public class NegotiationPkt {
     protected DatagramPacket pkt;
 
 
-    public NegotiationPkt( boolean sendPkt )throws SocketException, UnknownHostException {
-        if( sendPkt ){
+    public NegotiationPkt( boolean isRequestPkt )throws SocketException, UnknownHostException {
+        if( isRequestPkt ){
 
             Random r = new Random();
 
             int server_port = 55555;
-            //InetAddress server_addr = NetUtils.getBroadcast();
             InetAddress server_addr =  InetAddress.getByName( NetUtils.getNetworkBroadcastAddress() );
             int msg_length = 1;
             byte[] message = new byte[1];
@@ -47,9 +46,20 @@ public class NegotiationPkt {
         String myAddr = NetUtils.getIPAddress(true);
         return otherSideAddr.equals(myAddr);
     }
+    public static boolean isIamServer(NegotiationPkt broadcastRequestPkt, NegotiationPkt responsePkt){
+
+        byte[] data =  responsePkt.Pkt().getData();
+        byte otherSideSeed = data[ 0 ];
+        otherSideSeed = otherSideSeed;
+        return otherSideSeed < broadcastRequestPkt.getSeed();
+    }
 
     public String getOtherHost(){
 
         return pkt.getAddress().getHostName();
+    }
+    public String getMyHost(){
+
+        return NetUtils.getIPAddress(true);
     }
 }
