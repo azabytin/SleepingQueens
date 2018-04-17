@@ -17,46 +17,40 @@ public class AiOponent {
         computerPlayer = computerPlayer_;
     }
 
-
-    public  void ChooseCardToPlay(GameState computerGameState,  ArrayList<Card> cardsToPlay )
+    protected void ChooseOponentCardToPlay( Card.cardType enemyLastCard,  ArrayList<Card> cardsToPlay )
     {
-        Card opponentCard;
-        opponentCard = ChooseOponentCardToPlay(computerGameState );
-        cardsToPlay.add( opponentCard );
-   }
-
-    protected Card ChooseOponentCardToPlay( GameStateKnightAttacked state)
-    {
-        if( computerPlayer.GetCards().GetDragon() != null )
-            return computerPlayer.GetCards().GetDragon();
-
-        return ChooseOponentCardToPlay( (GameState)state );
-    }
-
-    protected Card ChooseOponentCardToPlay( GameStateMagicAttacted state)
-    {
-        if( computerPlayer.GetCards().GetStick() != null )
-            return computerPlayer.GetCards().GetStick();
-
-        return ChooseOponentCardToPlay( (GameState)state );
-    }
-
-    protected Card ChooseOponentCardToPlay( GameState state)
-    {
-        if( humanPlayer.GetQueenCards().size() > 0 ) {
-            if (computerPlayer.GetCards().GetKnight() != null)
-                return computerPlayer.GetCards().GetKnight();
-
-            if (computerPlayer.GetCards().GetMagic() != null)
-                return computerPlayer.GetCards().GetMagic();
+        if(enemyLastCard == Card.cardType.magic && computerPlayer.GetCards().GetStick() != null){
+            cardsToPlay.add(computerPlayer.GetCards().GetStick());
+            return;
         }
 
-        if( computerPlayer.GetCards().GetKing() != null )
-            return computerPlayer.GetCards().GetKing();
+        if(enemyLastCard == Card.cardType.knight && computerPlayer.GetCards().GetDragon() != null){
+            cardsToPlay.add(computerPlayer.GetCards().GetDragon());
+            return;
+        }
 
-        if( computerPlayer.GetCards().GetNumber() != null )
-            return computerPlayer.GetCards().GetNumber();
+        if( humanPlayer.GetQueenCards().size() > 0 ) {
+            if (computerPlayer.GetCards().GetKnight() != null) {
+                cardsToPlay.add(computerPlayer.GetCards().GetKnight());
+                return;
+            }
 
-        return computerPlayer.GetCards().get( 0 );
+            if (computerPlayer.GetCards().GetMagic() != null) {
+                cardsToPlay.add(computerPlayer.GetCards().GetMagic());
+                return;
+            }
+        }
+
+        if( computerPlayer.GetCards().GetKing() != null ) {
+            cardsToPlay.add(computerPlayer.GetCards().GetKing());
+            return;
+        }
+
+        if( computerPlayer.GetCards().GetNumber() != null ) {
+            cardsToPlay.add(computerPlayer.GetCards().GetNumber());
+            return;
+        }
+
+        cardsToPlay.add( computerPlayer.GetCards().get( 0 ) );
     }
 }

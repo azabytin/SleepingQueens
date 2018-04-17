@@ -12,29 +12,24 @@ public class GameLogic implements iGameLogic, java.io.Serializable {
     protected PlayCardsStack playCardsStack;
     protected PlayCardsStack queenCardsStack;
 
-    Card lastCard;
-    Card beforeLastCard;
+    protected Player player;
+    protected Player opponent;
 
-    protected GameState playerGameState;
-    protected GameState opponentGameState;
-    protected Player humanPlayer;
-    protected Player computerPlayer;
-
+    protected ArrayList<Card> playedCards = new ArrayList<>();
 
 public void startNewGame()
 {
     queenCardsStack = new PlayCardsStack( new QueenCardCreater());
     playCardsStack = new PlayCardsStack( new PlayCardCreater());
 
-    humanPlayer = new Player();
-    computerPlayer = new Player( humanPlayer );
-    humanPlayer.SetOpponent(this.computerPlayer);
+    player = new Player();
+    opponent = new Player(player);
+    player.setCanUserPlay(true);
+    opponent.setCanUserPlay(false);
+    player.SetOpponent(this.opponent);
 
-    refillCardsFromStack( humanPlayer );
-    refillCardsFromStack( computerPlayer );
-
-    playerGameState = new GameStateWaitForСard(humanPlayer, this );
-    opponentGameState = new GameStateIdle(computerPlayer, this);
+    refillCardsFromStack(player);
+    refillCardsFromStack(opponent);
 }
 
     protected void refillCardsFromStack(Player player){
@@ -46,13 +41,11 @@ public void startNewGame()
         }
     }
 
-    protected void removeCardFromPlayer( Card card, Player player){
+    protected void DropPlayerCard(Card card, Player player){
         player.RemovecCard( card );
 
-        beforeLastCard = lastCard;
-        lastCard = card;
+        playedCards.add(card);
     }
-
 
     protected void OnGetBackQueen( Player player){
 
@@ -64,10 +57,18 @@ public void startNewGame()
         player.GiveOponentQueen();
     }
 
-    public void playCardFromGameState(Player player, Card card )
+    public void playCard(Player player, Card card )
     {
-        removeCardFromPlayer( card, player);
+        DropPlayerCard( card, player);
         refillCardsFromStack( player );
+
+        if(getLastCard().isDragon() && !card.isKnight()){
+            player.GiveOponentQueen();
+        }
+
+        if(getLastCard().isMagic() && !card.isStick()){
+            player.GetBackQueen(queenCardsStack);
+        }
 
         if( card.isKing()){
             player.AddQueenCard( queenCardsStack.Get() );
@@ -107,14 +108,9 @@ public void startNewGame()
         if( !IsCardsValidToPlay( cardsToPlay ) )
             return false;
 
-        opponentGameState = opponentGameState.PlayCard( cardsToPlay.get(0) );
-
         for (Card card: cardsToPlay) {
-            playerGameState = playerGameState.PlayCard( card );
+            playCard( player, card );
         }
-
-        playerGameState = new GameStateIdle(playerGameState);
-        opponentGameState = new GameStateWaitForСard(opponentGameState);
 
         return true;
     }
@@ -122,54 +118,47 @@ public void startNewGame()
     public boolean oponentPlayCards(ArrayList<Card> cardsToPlay){
 
         if( cardsToPlay.size() == 0){
-            AiOponent ai = new AiOponent(computerPlayer, humanPlayer);
-            ai.ChooseCardToPlay(opponentGameState, cardsToPlay );
+            AiOponent ai = new AiOponent(opponent, player);
+            ai.ChooseOponentCardToPlay(getLastCard().getType(), cardsToPlay );
         }
 
         if( !IsCardsValidToPlay( cardsToPlay ) )
             return false;
 
-        playerGameState = playerGameState.PlayCard( cardsToPlay.get(0) );
-
         for (Card card: cardsToPlay) {
-           opponentGameState = opponentGameState.PlayCard( card );
+            playCard( opponent, card );
         }
-
-        opponentGameState = new GameStateIdle(opponentGameState);
-        playerGameState = new GameStateWaitForСard(playerGameState);
-
         return true;
     }
 
 
     public boolean canOponentPlay(){
-        boolean res = playerGameState.getClass().toString().contains("GameStateIdle");
-        return res;
+        return opponent.isCanUserPlay();
     }
 
     public boolean canUserPlay(){
-        return !canOponentPlay();
+        return player.isCanUserPlay();
     }
 
     public List<Card> getPlayerQueenCards() {
-        return humanPlayer.GetQueenCards();
+        return player.GetQueenCards();
     }
-    public List<Card> getOpponentQueenCards() {   return computerPlayer.GetQueenCards();}
+    public List<Card> getOpponentQueenCards() {   return opponent.GetQueenCards();}
     public List<Card> getOpponentCards() {
-        return computerPlayer.GetCards();
+        return opponent.GetCards();
     }
 
     public List<Card> getPlayerCards() {
-        return humanPlayer.GetCards();
+        return player.GetCards();
     }
-    public Card getLastCard() {  return lastCard;
+    public Card getLastCard() {  return playedCards.get(0);
     }
-    public Card getBeforeLastCard() {  return beforeLastCard; }
+    public Card getBeforeLastCard() {  return playedCards.get(1); }
     public iGameLogic.Winner whoIsWinner()
     {
-        if( humanPlayer.GetQueenCards().size()>4 )
+        if( player.GetQueenCards().size()>4 )
             return Winner.PlayerWinner;
-        else if( computerPlayer.GetQueenCards().size()>4)
+        else if( opponent.GetQueenCards().size()>4)
             return Winner.OpponentWinner;
 
         return Winner.NoWinner;

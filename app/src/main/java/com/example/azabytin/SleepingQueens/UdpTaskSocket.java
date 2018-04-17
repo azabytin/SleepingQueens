@@ -3,10 +3,18 @@ package com.example.azabytin.SleepingQueens;
 import android.os.Handler;
 import android.os.Message;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -29,7 +37,6 @@ class UdpTaskSocket extends Thread  {
     public UdpTaskSocket( Handler uiThreadHandler_ )
     {
         uiThreadHandler = uiThreadHandler_;
-
     }
 
     protected Handler uiThreadHandler;
@@ -74,12 +81,12 @@ class UdpTaskSocket extends Thread  {
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
 
-                serverLoop(gameLogic);
+                serverLoopUdp(gameLogic);
             }
             else {
                 Thread.sleep(1000);
 
-                clientLoop( responsePkt.getOtherHost() );
+                clientLoopUdp( responsePkt.getOtherHost() );
             }
         }
         catch(Exception ex)
@@ -87,6 +94,102 @@ class UdpTaskSocket extends Thread  {
             String s = ex.getMessage();
         }
     }
+
+    private void serverLoopUdp(GameLogic gameLogic){
+        try {
+            DatagramSocket udpSocketForSerialization = new DatagramSocket(55555);
+            udpSocketForSerialization.setSoTimeout(100);
+            Sender sender = new Sender(udpSocketForSerialization);
+            Receiver reciever  = new Receiver(udpSocketForSerialization);
+
+
+            while (true) {
+                serverSerializer.accept();
+                serverSerializer.writeGameLogic(gameLogic);
+                ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
+                try{
+                    reciever.recvObjFrom();
+
+                }catch(Exception ex){
+                    continue;
+                }
+                if( cardsToPlay.size() > 0 ){
+                    Message message = uiThreadHandler.obtainMessage();
+                    message.obj = cardsToPlay;
+                    uiThreadHandler.sendMessage(message);
+                }
+            }
+        }
+        catch (Exception e){
+            String s = e.getMessage();
+        }
+    }
+
+    private void clientLoopUdp(String host){
+
+        ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
+        while(true){
+            try{
+                ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
+                if( clientSerializer.connect(host) ) {
+                    GameLogic gameLogic = clientSerializer.readGameLogic();
+                    Message message = uiThreadHandler.obtainMessage();
+                    clientLogic.Init(gameLogic);
+                    message.obj = clientLogic;
+                    uiThreadHandler.sendMessage(message);
+
+                    clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
+                }
+                Thread.sleep(300);
+                clientSerializer.clean();
+            }catch (Exception e){
+                String s = e.getMessage();
+            }
+        }
+    }
+
+    public class Sender {
+        Sender(DatagramSocket _dSock){
+            dSock = _dSock;
+        }
+
+        protected DatagramSocket dSock;
+         public  void sendTo(DatagramSocket dSock, Object o, String hostName, int desPort) throws Exception{
+            InetAddress address = InetAddress.getByName(hostName);
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream(5000);
+            ObjectOutputStream os = new ObjectOutputStream(new BufferedOutputStream(byteStream));
+            os.flush();
+            os.writeObject(o);
+            os.flush();
+            //retrieves byte array
+            byte[] sendBuf = byteStream.toByteArray();
+            DatagramPacket packet = new DatagramPacket(sendBuf, sendBuf.length, address, desPort);
+            int byteCount = packet.getLength();
+            dSock.send(packet);
+            os.close();
+        }
+    }
+
+    public class Receiver {
+        Receiver(DatagramSocket _dSock){
+            dSock = _dSock;
+        }
+
+        protected DatagramSocket dSock;
+
+        public Object recvObjFrom() throws Exception {
+            byte[] recvBuf = new byte[5000];
+            DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
+            dSock.receive(packet);
+            int byteCount = packet.getLength();
+            ByteArrayInputStream byteStream = new ByteArrayInputStream(recvBuf);
+            ObjectInputStream is = new ObjectInputStream(new BufferedInputStream(byteStream));
+            Object o = is.readObject();
+            is.close();
+            return (o);
+        }
+    }
+
 
     private void serverLoop(GameLogic gameLogic){
         try {
