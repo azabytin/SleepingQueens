@@ -81,7 +81,7 @@ class UdpTaskSocket extends Thread  {
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
 
-                serverLoopUdp(gameLogic);
+                serverLoopUdp(gameLogic, responsePkt.getOtherHost());
             }
             else {
                 Thread.sleep(1000);
@@ -95,7 +95,7 @@ class UdpTaskSocket extends Thread  {
         }
     }
 
-    private void serverLoopUdp(GameLogic gameLogic){
+    private void serverLoopUdp(GameLogic gameLogic, String host){
         try {
             DatagramSocket udpSocketForSerialization = new DatagramSocket(55555);
             udpSocketForSerialization.setSoTimeout(100);
@@ -104,19 +104,18 @@ class UdpTaskSocket extends Thread  {
 
 
             while (true) {
-                serverSerializer.accept();
-                serverSerializer.writeGameLogic(gameLogic);
-                ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
+                reciever.recvObjFrom();
                 try{
-                    reciever.recvObjFrom();
+                    ArrayList<Card> cardsToPlay = (ArrayList<Card>)reciever.recvObjFrom();
+                    if( cardsToPlay.size() > 0 ){
+                        Message message = uiThreadHandler.obtainMessage();
+                        message.obj = cardsToPlay;
+                        uiThreadHandler.sendMessage(message);
+                    }
 
+                    sender.sendTo(gameLogic, host, 55555 );
                 }catch(Exception ex){
                     continue;
-                }
-                if( cardsToPlay.size() > 0 ){
-                    Message message = uiThreadHandler.obtainMessage();
-                    message.obj = cardsToPlay;
-                    uiThreadHandler.sendMessage(message);
                 }
             }
         }
@@ -154,7 +153,7 @@ class UdpTaskSocket extends Thread  {
         }
 
         protected DatagramSocket dSock;
-         public  void sendTo(DatagramSocket dSock, Object o, String hostName, int desPort) throws Exception{
+         public  void sendTo( Object o, String hostName, int desPort) throws Exception{
             InetAddress address = InetAddress.getByName(hostName);
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(5000);
             ObjectOutputStream os = new ObjectOutputStream(new BufferedOutputStream(byteStream));
