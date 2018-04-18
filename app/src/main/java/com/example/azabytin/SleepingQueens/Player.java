@@ -12,6 +12,7 @@ public class Player implements java.io.Serializable
     protected UserCards сards;
     protected List<Card> queenCards;
     protected Player opponent;
+    protected boolean canUserPlay;
 
     public Player( Player o)
     {
@@ -87,4 +88,11 @@ public class Player implements java.io.Serializable
         return сards.get(0);
     }
 
+    public boolean isCanUserPlay() {
+        return canUserPlay;
+    }
+
+    public void setCanUserPlay(boolean canUserPlay) {
+        this.canUserPlay = canUserPlay;
+    }
 }
