@@ -172,7 +172,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onClickPlay( View v) {
-        new PlayCardsTask().execute( cardsToPlay );
+        //new PlayCardsTask().execute( cardsToPlay );
+
+        if( gameLogic.userPlayCards( cardsToPlay ) ){
+            cardsToPlay.clear();
+        }
     }
 
         @Override

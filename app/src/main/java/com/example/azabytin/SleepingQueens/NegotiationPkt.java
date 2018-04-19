@@ -48,10 +48,14 @@ public class NegotiationPkt {
     }
     public static boolean isIamServer(NegotiationPkt broadcastRequestPkt, NegotiationPkt responsePkt){
 
-        byte[] data =  responsePkt.Pkt().getData();
-        byte otherSideSeed = data[ 0 ];
-        otherSideSeed = otherSideSeed;
-        return otherSideSeed < broadcastRequestPkt.getSeed();
+        String myhost = broadcastRequestPkt.getMyHost();
+        String otherhost = responsePkt.getOtherHost();
+       return Integer.parseInt(myhost.split("\\.")[3] ) < Integer.parseInt(otherhost.split("\\.")[3] ) ;
+
+        //byte[] data =  responsePkt.Pkt().getData();
+        //byte otherSideSeed = data[ 0 ];
+        //otherSideSeed = otherSideSeed;
+        //return otherSideSeed < broadcastRequestPkt.getSeed();
     }
 
     public String getOtherHost(){
