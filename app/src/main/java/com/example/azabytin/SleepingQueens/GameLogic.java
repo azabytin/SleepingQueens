@@ -42,9 +42,8 @@ public void startNewGame()
     }
 
     protected void DropPlayerCard(Card card, Player player){
-        playedCards.add(card);
+        playedCards.add(0, card);
         player.RemovecCard( card );
-
     }
 
     protected void OnGetBackQueen( Player player){
@@ -59,9 +58,6 @@ public void startNewGame()
 
     public void playCard(Player player, Card card )
     {
-        DropPlayerCard( card, player);
-        refillCardsFromStack( player );
-
         if(getLastCard()!= null && getLastCard().isDragon() && !card.isKnight()){
             player.GiveOponentQueen();
         }
@@ -82,6 +78,8 @@ public void startNewGame()
                 player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
             }
         }
+        DropPlayerCard( card, player);
+        refillCardsFromStack( player );
     }
 
     protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
@@ -158,15 +156,15 @@ public void startNewGame()
     public List<Card> getPlayerCards() {
         return player.GetCards();
     }
-    public Card getBeforeLastCard() {
+    public Card getLastCard() {
         if( playedCards.size() > 0 ) {
-            return playedCards.get( playedCards.size()-1 );
+            return playedCards.get( 0 );
         }
         return null;
     }
-    public Card getLastCard() {
+    public Card getBeforeLastCard() {
         if( playedCards.size() > 1 ) {
-            return playedCards.get(playedCards.size()-2);
+            return playedCards.get(1);
         }
         return null;
 }

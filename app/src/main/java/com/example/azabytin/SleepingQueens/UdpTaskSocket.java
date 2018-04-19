@@ -256,9 +256,7 @@ class UdpTaskSocket extends Thread  {
 
         public void accept() throws java.io.IOException
         {
-            SocketChannel tempSChan = ssChannel.accept();
-            //clean();
-            sChannel = tempSChan;
+            sChannel = ssChannel.accept();;
         }
 
         public ArrayList<Card> readCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
@@ -297,7 +295,7 @@ class UdpTaskSocket extends Thread  {
 
     private class ClientSocketSerializer
     {
-        private SocketChannel sChannel = null;
+        public SocketChannel sChannel = null;
         private ObjectOutputStream  oos = null;
         private ObjectInputStream ois = null;
 
