@@ -66,20 +66,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-
-    private class PlayCardsTask extends AsyncTask< ArrayList<Card>, Integer, Boolean>{
-
-        protected Boolean doInBackground(ArrayList<Card>...  cardsToPlay) {
-            return gameLogic.userPlayCards( cardsToPlay[0] ) ;
-        }
-
-        protected void onPostExecute(Boolean result) {
-            if( result){
-                cardsToPlay.clear();
-            }
-        }
-    }
-
     protected void setUsedCardButton( int resourceId)
     {
         android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
@@ -275,16 +261,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
         builder.setTitle("Отправка отзыва");
         builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.setNeutralButton(android.R.string.ok, null);
         builder.setMessage("Для отправки отзыва нужно выбрать Gmail");
+        builder.setCancelable(false);
+        builder.setPositiveButton( "Новая игра", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
+                feedbackEmail.setType("text/email");
+                feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
+                feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                startActivity(Intent.createChooser(feedbackEmail, "Send Feedback:"));
+            }
+            ;
+        });
+
         builder.show();
-
-        Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
-        feedbackEmail.setType("text/email");
-        feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
-        feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
-        startActivity(Intent.createChooser(feedbackEmail, "Send Feedback:"));
-
     }
 }
 
