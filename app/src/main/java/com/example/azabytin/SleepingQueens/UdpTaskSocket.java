@@ -81,12 +81,13 @@ class UdpTaskSocket extends Thread  {
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
 
-                serverLoopUdp(gameLogic, responsePkt.getOtherHost());
+                //serverLoopUdp(gameLogic, responsePkt.getOtherHost());
+                serverLoop(gameLogic);
             }
             else {
                 Thread.sleep(1000);
-
-                clientLoopUdp( responsePkt.getOtherHost() );
+                //clientLoopUdp( responsePkt.getOtherHost() );
+                clientLoop( responsePkt.getOtherHost() );
             }
         }
         catch(Exception ex)
@@ -140,7 +141,6 @@ class UdpTaskSocket extends Thread  {
                     clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
                 }
                 Thread.sleep(300);
-                clientSerializer.clean();
             }catch (Exception e){
                 String s = e.getMessage();
             }
@@ -191,23 +191,29 @@ class UdpTaskSocket extends Thread  {
 
 
     private void serverLoop(GameLogic gameLogic){
+        ServerSocketSerializer serverSerializer = null;
         try {
-            ServerSocketSerializer serverSerializer = new ServerSocketSerializer();
+            serverSerializer = new ServerSocketSerializer();
+        }catch (java.io.IOException e)
+        {
+            String s = e.getMessage();
+            return;
+        }
 
-            while (true) {
+        while (true) {
+            try {
                 serverSerializer.accept();
                 serverSerializer.writeGameLogic(gameLogic);
                 ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
 
-                if( cardsToPlay.size() > 0 ){
+                if (cardsToPlay.size() > 0) {
                     Message message = uiThreadHandler.obtainMessage();
                     message.obj = cardsToPlay;
                     uiThreadHandler.sendMessage(message);
                 }
+            } catch (Exception e) {
+                String s = e.getMessage();
             }
-        }
-        catch (Exception e){
-            String s = e.getMessage();
         }
     }
 
@@ -226,8 +232,7 @@ class UdpTaskSocket extends Thread  {
 
                     clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
                 }
-                Thread.sleep(300);
-                clientSerializer.clean();
+                Thread.sleep(500);
             }catch (Exception e){
                 String s = e.getMessage();
             }
@@ -249,13 +254,9 @@ class UdpTaskSocket extends Thread  {
             ssChannel.socket().bind(new InetSocketAddress(50000));
         }
 
-        public void accept()throws java.io.IOException
+        public void accept() throws java.io.IOException
         {
-            try{
-                clean();
-            } catch (Exception e){}
-
-            sChannel = ssChannel.accept();
+            sChannel = ssChannel.accept();;
         }
 
         public ArrayList<Card> readCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
@@ -275,21 +276,26 @@ class UdpTaskSocket extends Thread  {
         }
         public void clean() throws java.io.IOException
         {
-            if( oos != null ) {
-                oos.close();
+            try{
+                if (oos != null) {
+                    oos.close();
+                }
+                if (ois != null) {
+                    ois.close();
+                }
+                if (sChannel != null) {
+                    sChannel.close();
+                }
+            } catch (Exception e) {
+
             }
-            if( ois != null ){
-                ois.close();
-            }
-            if(sChannel != null){
-                sChannel.close();
-            }
+
         }
     }
 
     private class ClientSocketSerializer
     {
-        private SocketChannel sChannel = null;
+        public SocketChannel sChannel = null;
         private ObjectOutputStream  oos = null;
         private ObjectInputStream ois = null;
 
@@ -302,6 +308,7 @@ class UdpTaskSocket extends Thread  {
 
         public boolean connect( String host) throws java.io.IOException
         {
+            //clean();
             return  sChannel.connect(new InetSocketAddress(host, 50000));
         }
 
@@ -328,14 +335,18 @@ class UdpTaskSocket extends Thread  {
 
         public void clean() throws java.io.IOException
         {
-            if( oos != null ) {
-                oos.close();
-            }
-            if( ois != null ){
-                ois.close();
-            }
-            if(sChannel != null){
-                sChannel.close();
+            try{
+                if (oos != null) {
+                    oos.close();
+                }
+                if (ois != null) {
+                    ois.close();
+                }
+                if (sChannel != null) {
+                    sChannel.close();
+                }
+            } catch (Exception e) {
+
             }
         }
     }

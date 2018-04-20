@@ -42,9 +42,8 @@ public void startNewGame()
     }
 
     protected void DropPlayerCard(Card card, Player player){
+        playedCards.add(0, card);
         player.RemovecCard( card );
-
-        playedCards.add(card);
     }
 
     protected void OnGetBackQueen( Player player){
@@ -59,14 +58,11 @@ public void startNewGame()
 
     public void playCard(Player player, Card card )
     {
-        DropPlayerCard( card, player);
-        refillCardsFromStack( player );
-
-        if(getLastCard().isDragon() && !card.isKnight()){
+        if(getLastCard()!= null && getLastCard().isDragon() && !card.isKnight()){
             player.GiveOponentQueen();
         }
 
-        if(getLastCard().isMagic() && !card.isStick()){
+        if(getLastCard()!= null && getLastCard().isMagic() && !card.isStick()){
             player.GetBackQueen(queenCardsStack);
         }
 
@@ -82,6 +78,8 @@ public void startNewGame()
                 player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
             }
         }
+        DropPlayerCard( card, player);
+        refillCardsFromStack( player );
     }
 
     protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
@@ -115,6 +113,9 @@ public void startNewGame()
             playCard( player, card );
         }
 
+        player.setCanUserPlay(false);
+        opponent.setCanUserPlay(true);
+
         return true;
     }
 
@@ -131,6 +132,10 @@ public void startNewGame()
         for (Card card: cardsToPlay) {
             playCard( opponent, card );
         }
+
+        player.setCanUserPlay(true);
+        opponent.setCanUserPlay(false);
+
         return true;
     }
 
@@ -154,9 +159,18 @@ public void startNewGame()
     public List<Card> getPlayerCards() {
         return player.GetCards();
     }
-    public Card getLastCard() {  return playedCards.get(0);
+    public Card getLastCard() {
+        if( playedCards.size() > 0 ) {
+            return playedCards.get( 0 );
+        }
+        return null;
     }
-    public Card getBeforeLastCard() {  return playedCards.get(1); }
+    public Card getBeforeLastCard() {
+        if( playedCards.size() > 1 ) {
+            return playedCards.get(1);
+        }
+        return null;
+}
     public iGameLogic.Winner whoIsWinner()
     {
         if( player.GetQueenCards().size()>4 )
