@@ -31,8 +31,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     UpdateCardsView();
                 }
                 else {
+                    boolean updateView = false;
+                    if( gameLogic == null ){
+                        updateView = true;
+                    }
                     gameLogic = (iGameLogic) msg.obj;
                     gameLogic.startNewGame();
+                    if(updateView) {
+                        UpdateCardsView();
+                    }
                 }
             }
     } ;
