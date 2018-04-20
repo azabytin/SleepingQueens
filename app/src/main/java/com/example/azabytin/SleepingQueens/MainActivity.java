@@ -19,7 +19,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     protected iGameLogic gameLogic;
-    protected Hashtable< View, Card> viewToCardHash;
+    protected Hashtable< Integer, Card> viewToCardHash;
     protected ArrayList<Card> cardsToPlay;
     UdpTaskSocket udpTask = null;
 
@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void handleMessage(Message msg) {
                 if( msg.obj instanceof ArrayList){
                     gameLogic.oponentPlayCards((ArrayList<Card>) msg.obj);
+                    UpdateCardsView();
                 }
                 else {
                     gameLogic = (iGameLogic) msg.obj;
@@ -41,8 +42,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void run() {
-            UpdateCardsView();
-            timerHandler.postDelayed(this, 300);
+            UpdateCheckedCardsView();
+            timerHandler.postDelayed(this, 100);
         }
     };
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void run() {
             if( gameLogic != null && gameLogic.canOponentPlay() ){
                 gameLogic.oponentPlayCards( new ArrayList<Card>());
+                UpdateCardsView();
             }
             timerHandler.postDelayed(this, 2000);
         }
@@ -71,13 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void setPlayCardButton( int buttonId, Card card )
-    {
-        android.widget.ImageButton button = findViewById( buttonId );
-        viewToCardHash.put(button, card);
-        button.setImageResource(card.resourceId);
-    }
-
     protected void setUsedCardButton( int resourceId)
     {
         android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
@@ -92,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void onStartNewGame()
     {
-        viewToCardHash = new Hashtable<View, Card>();
+        gameLogic = null;
+        viewToCardHash = new Hashtable<Integer, Card>();
         cardsToPlay = new ArrayList<Card>();
 
         if( udpTask != null ){
@@ -119,12 +115,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         udpTask = new UdpTaskSocket(udpHandler);
         Thread thread = new Thread(udpTask);
         thread.start();
+        UpdateCardsView();
     }
     protected  void OnStartOnePlayerGame()
     {
         gameLogic = new GameLogic();
         gameLogic.startNewGame();
         timerHandler.postDelayed(timerRunnableOponentPlay, 0);
+        UpdateCardsView();
     }
 
     @Override
@@ -144,15 +142,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (i = 0; i < cards.size(); i++) {
             button = findViewById( firstButton + i);
             button.setImageResource(cards.get(i).resourceId);
-            viewToCardHash.put( button, cards.get( i ));
-            if( cardsToPlay.contains(cards.get( i )))
-            {
-                button.setBackgroundResource( R.color.colorAccent );
-            }
-            else
-            {
-                button.setBackgroundResource( R.color.white);
-            }
         }
         for (; i < 5; i++) {
             button = findViewById( firstButton + i);
@@ -165,24 +154,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
         builder.setTitle("Игра окончена");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.setNeutralButton(android.R.string.ok, null);
         builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton( "Новая игра", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                onStartNewGame();
+            }
+
+            ;
+        });
         builder.show();
     }
 
     public void onClickPlay( View v) {
-        //new PlayCardsTask().execute( cardsToPlay );
-
         if( gameLogic.userPlayCards( cardsToPlay ) ){
             cardsToPlay.clear();
+            UpdateCardsView();
         }
     }
 
         @Override
     public void onClick( View v) {
         try {
-            Card card = viewToCardHash.get(v);
+            Card card = viewToCardHash.get(v.getId());
 
             if( cardsToPlay.contains(card)){
                 cardsToPlay.remove(card);
@@ -194,7 +188,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             {}
     }
 
-    protected void UpdateCardsView() {
+    protected void UpdateCheckedCardsView()
+    {
         Button playButton = findViewById(R.id.playButton);
         if (gameLogic != null && gameLogic.canUserPlay()) {
             playButton.setEnabled(true);
@@ -202,8 +197,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             playButton.setEnabled(false);
         }
 
-        try{
-            setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
+        android.widget.ImageButton button;
+        int i;
+        for (i = 0; i < 5; i++) {
+            int buttonId = com.example.azabytin.SleepingQueens.R.id.cardButton1 + i;
+            button = findViewById( buttonId);
+
+            if( cardsToPlay.contains( viewToCardHash.get(buttonId) ))
+            {
+                button.setBackgroundResource( R.color.colorAccent );
+            }
+            else
+            {
+                button.setBackgroundResource( R.color.white);
+            }
+        }
+
+    }
+
+    protected void SetPlayerCardsImages(){
+
+        int i = 0;
+        viewToCardHash.clear();
+        List<Card> playerCards= gameLogic.getPlayerCards();
+        for( Card card : playerCards ){
+            viewToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card );
+        }
+    }
+
+    protected void UpdateCardsView() {
+          try{
+
+              setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
+              SetPlayerCardsImages();
 
             if (gameLogic.getLastCard() != null)
                 setUsedCardButton(gameLogic.getLastCard().resourceId);
@@ -219,15 +245,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
             if (gameLogic.whoIsWinner() == iGameLogic.Winner.PlayerWinner) {
-                timerHandler.removeCallbacks(timerRunnable);
                 showWinMessage("Вы выиграли");
-                onStartNewGame();
-                UpdateCardsView();
             } else if (gameLogic.whoIsWinner() == iGameLogic.Winner.OpponentWinner) {
-                timerHandler.removeCallbacks(timerRunnable);
                 showWinMessage("Вы проиграли!");
-                onStartNewGame();
-                UpdateCardsView();
             }
         }catch(Exception e){}
 
