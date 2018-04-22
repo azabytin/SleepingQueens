@@ -238,8 +238,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
             if (gameLogic.whoIsWinner() == iGameLogic.Winner.PlayerWinner) {
+                gameLogic = null;
                 showWinMessage("Вы выиграли");
             } else if (gameLogic.whoIsWinner() == iGameLogic.Winner.OpponentWinner) {
+                gameLogic = null;
                 showWinMessage("Вы проиграли!");
             }
         }catch(Exception e){}
@@ -249,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onPause() {
         super.onPause();
-        //timerHandler.removeCallbacks(timerRunnable);
     }
     @Override
     public void onStop(){
@@ -258,23 +259,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void onSendfeedbackButton(View v)
     {
+        Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
+        feedbackEmail.setType("text/email");
+        feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
+        feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Отзыв");
+        startActivity(Intent.createChooser(feedbackEmail, "Отправить отзыв ( Нужно выбрать Gmail ):"));
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
         builder.setTitle("Отправка отзыва");
         builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage("Для отправки отзыва нужно выбрать Gmail");
         builder.setCancelable(false);
-        builder.setPositiveButton( "Новая игра", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
-                feedbackEmail.setType("text/email");
-                feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
-                feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
-                startActivity(Intent.createChooser(feedbackEmail, "Send Feedback:"));
+
             }
             ;
         });
 
-        builder.show();
+        //builder.show();
     }
 }
 
