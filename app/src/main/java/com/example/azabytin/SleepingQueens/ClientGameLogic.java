@@ -1,6 +1,7 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.os.Message;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +81,7 @@ public class ClientGameLogic implements iGameLogic {
         Message message = new Message();
         message.obj = tmp;
         messaQequeue.add( message );
+        Log.i("ClientGameLogic", "Send cards to play");
         return true;
     }
 

@@ -173,7 +173,7 @@ public void startNewGame()
 }
     public iGameLogic.Winner whoIsWinner()
     {
-        if( player.GetQueenCards().size()>4 )
+        if( player.GetQueenCards().size()>0 )
             return Winner.PlayerWinner;
         else if( opponent.GetQueenCards().size()>4)
             return Winner.OpponentWinner;

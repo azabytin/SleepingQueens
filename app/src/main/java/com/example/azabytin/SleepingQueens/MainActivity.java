@@ -32,11 +32,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else {
                     boolean updateView = false;
-                    if( gameLogic == null ){
+                    if( gameLogic == null || gameLogic.canUserPlay()){
                         updateView = true;
                     }
                     gameLogic = (iGameLogic) msg.obj;
-                    gameLogic.startNewGame();
                     if(updateView) {
                         UpdateCardsView();
                     }
@@ -78,16 +77,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button.setImageResource( resourceId );
     }
 
-    protected void onStartNewGame()
+    protected void CleanUp()
     {
         gameLogic = null;
         viewToCardHash = new Hashtable<Integer, Card>();
         cardsToPlay = new ArrayList<Card>();
 
         if( udpTask != null ){
-            udpTask.interrupt();
+            udpTask.stop();
+            udpTask = null;
         }
-
+    }
+    protected void onStartNewGame()
+    {
+        CleanUp();
         CharSequence[] items = {"Играть с Андроидом", "Играть по сети вдвоем"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Выбери режим игры");
@@ -238,10 +241,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
             if (gameLogic.whoIsWinner() == iGameLogic.Winner.PlayerWinner) {
-                gameLogic = null;
+                CleanUp();
                 showWinMessage("Вы выиграли");
             } else if (gameLogic.whoIsWinner() == iGameLogic.Winner.OpponentWinner) {
-                gameLogic = null;
+                CleanUp();
                 showWinMessage("Вы проиграли!");
             }
         }catch(Exception e){}

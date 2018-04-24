@@ -70,6 +70,7 @@ class UdpTaskSocket extends Thread  {
             GameLogic gameLogic = null;
             if( workAsServer  ){
                 gameLogic = new GameLogic();
+                gameLogic.startNewGame();
 
                 Message message = uiThreadHandler.obtainMessage();
                 message.obj = gameLogic;
@@ -96,9 +97,6 @@ class UdpTaskSocket extends Thread  {
         ServerSocketSerializer serverSerializer = null;
         try {
             serverSerializer = new ServerSocketSerializer();
-            Log.i("serverLoop", "Accepting connection");
-            serverSerializer.accept();
-            Log.i("serverLoop", "Accepted connection");
 
         }catch (java.io.IOException e){
             Log.i("serverLoop", "Create ServerSocketSerializer fail");
@@ -107,6 +105,10 @@ class UdpTaskSocket extends Thread  {
 
         while (true) {
             try {
+
+                Log.i("serverLoop", "Accepting connection");
+                serverSerializer.accept();
+                Log.i("serverLoop", "Accepted connection");
 
                 serverSerializer.writeGameLogic(gameLogic);
                 Log.i("serverLoop", "Write game logic done");
@@ -128,35 +130,32 @@ class UdpTaskSocket extends Thread  {
 
     private void clientLoop(String host)throws java.lang.InterruptedException, java.io.IOException{
 
-        ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
-
-        Log.i("clientLogic", "start");
-        ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
-        Log.i("clientLogic", "Created ");
-         clientSerializer.connect(host);
-
         while(true){
-            try{
+            try {
 
+                ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
+                Log.i("clientLogic", "start");
+                ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
+                Log.i("clientLogic", "Created ");
+                clientSerializer.connect(host);
 
-                    Log.i("clientLogic", "connected done");
+                Log.i("clientLogic", "connected done");
 
-                    clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
-                    Log.i("clientLogic", "writeCardsToPlay done");
+                GameLogic gameLogic = clientSerializer.readGameLogic();
+                Log.i("clientLogic", "readGameLogic done");
 
-                    GameLogic gameLogic = clientSerializer.readGameLogic();
-                    Log.i("clientLogic", "readGameLogic done");
+                Message message = uiThreadHandler.obtainMessage();
+                clientLogic.Init(gameLogic);
+                message.obj = clientLogic;
+                uiThreadHandler.sendMessage(message);
 
-                    Message message = uiThreadHandler.obtainMessage();
-                    clientLogic.Init(gameLogic);
-                    message.obj = clientLogic;
-                    uiThreadHandler.sendMessage(message);
+                clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
+                Log.i("clientLogic", "writeCardsToPlay done");
 
-
-                Thread.sleep(2000);
-            }catch (Exception e){
+                Thread.sleep(1000);
+            } catch (Exception e) {
                 Log.i("clientLogic", "Exception");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 String s = e.getMessage();
             }
         }
@@ -181,15 +180,22 @@ class UdpTaskSocket extends Thread  {
         {
             sChannel = ssChannel.accept();
             sChannel.socket().setSoTimeout(300);
+            oos = null;
+            ois = null;
         }
 
-        public ArrayList<Card> readCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
+        public ArrayList<Card> readCardsToPlay()
         {
-            if(ois == null)
-                ois = new ObjectInputStream(sChannel.socket().getInputStream());
+            try {
+                if (ois == null)
+                    ois = new ObjectInputStream(sChannel.socket().getInputStream());
 
-            Object o = ois.readObject();
-            return (ArrayList<Card>) o;
+                Object o = ois.readObject();
+                return (ArrayList<Card>) o;
+            }catch (Exception e){
+                Log.e("ServerSocketSerializer", "fail to readCardsToPlay");
+                return null;
+            }
         }
 
         public void writeGameLogic(GameLogic gameLogic) throws java.io.IOException
@@ -228,6 +234,7 @@ class UdpTaskSocket extends Thread  {
             ArrayList<Card> cardsToPlay = new ArrayList<Card>();
             if( msg != null ){
                 cardsToPlay = (ArrayList<Card>)msg.obj;
+                Log.i("ClientSocketSerializer", "Have cards to play: " + cardsToPlay.size());
             }
             oos.writeObject(cardsToPlay);
         }
