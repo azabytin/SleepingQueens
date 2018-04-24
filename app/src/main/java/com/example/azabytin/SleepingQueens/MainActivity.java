@@ -35,7 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if( gameLogic == null || gameLogic.canUserPlay()){
                         updateView = true;
                     }
-                    gameLogic = (iGameLogic) msg.obj;
+                    if( udpTask != null ) {
+                        gameLogic = (iGameLogic) msg.obj;
+                    }
                     if(updateView) {
                         UpdateCardsView();
                     }
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardsToPlay = new ArrayList<Card>();
 
         if( udpTask != null ){
-            udpTask.stop();
+            udpTask.stopThread();
             udpTask = null;
         }
     }
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
         timerHandler.postDelayed(timerRunnable, 0);
-        onStartNewGame();
+        //onStartNewGame();
     }
 
     protected void setButtonsImages( List<Card> cards, int firstButton )
@@ -258,6 +260,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onStop(){
         super.onStop();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        onStartNewGame();
     }
 
     public void onSendfeedbackButton(View v)

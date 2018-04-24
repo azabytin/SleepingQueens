@@ -26,7 +26,11 @@ import lipermi.net.Server;
 class UdpTaskSocket extends Thread  {
 
     protected BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
+    protected int loopCount = Integer.MAX_VALUE;
 
+    public void stopThread(){
+        loopCount = 2;
+    }
     public UdpTaskSocket( Handler uiThreadHandler_ )
     {
         uiThreadHandler = uiThreadHandler_;
@@ -103,7 +107,7 @@ class UdpTaskSocket extends Thread  {
         }
         Log.i("serverLoop", "Create ServerSocketSerializer ");
 
-        while (true) {
+        while (loopCount-- != 0) {
             try {
 
                 Log.i("serverLoop", "Accepting connection");
@@ -130,8 +134,9 @@ class UdpTaskSocket extends Thread  {
 
     private void clientLoop(String host)throws java.lang.InterruptedException, java.io.IOException{
 
-        while(true){
+        while (loopCount-- != 0) {
             try {
+                Thread.sleep(300);
 
                 ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
                 Log.i("clientLogic", "start");
@@ -152,7 +157,6 @@ class UdpTaskSocket extends Thread  {
                 clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
                 Log.i("clientLogic", "writeCardsToPlay done");
 
-                Thread.sleep(1000);
             } catch (Exception e) {
                 Log.i("clientLogic", "Exception");
                 Thread.sleep(1000);
