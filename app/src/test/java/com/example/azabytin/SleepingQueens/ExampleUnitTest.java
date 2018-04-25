@@ -1,17 +1,37 @@
 package com.example.azabytin.SleepingQueens;
 
 import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Mockito.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import android.content.SharedPreferences;
 
 import static org.junit.Assert.*;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
-public class ExampleUnitTest {
+
+@RunWith(MockitoJUnitRunner.class)
+public class UnitTestSample {
+
+    private static final String FAKE_STRING = "HELLO WORLD";
+
+    @Mock
+    Context mMockContext;
+
     @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+    public void readStringFromContext_LocalizedString() {
+        // Given a mocked Context injected into the object under test...
+        when(mMockContext.getString(R.string.hello_word))
+                .thenReturn(FAKE_STRING);
+        ClassUnderTest myObjectUnderTest = new ClassUnderTest(mMockContext);
+
+        // ...when the string is returned from the object under test...
+        String result = myObjectUnderTest.getHelloWorldString();
+
+        // ...then the result should be the expected one.
+        assertThat(result, is(FAKE_STRING));
     }
 }
