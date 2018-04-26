@@ -93,6 +93,13 @@ public class GameLogic implements iGameLogic, java.io.Serializable {
         if( !player.canUserPlay ){
             return false;
         }
+
+        for (Card card: cardsToPlay) {
+            if(player.GetCards().indexOf( card ) == -1){
+                return false;
+            }
+        }
+
         if(cardsToPlay.size() == 1){
             return true;
         }

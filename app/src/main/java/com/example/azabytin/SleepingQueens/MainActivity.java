@@ -229,10 +229,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
               setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
               SetPlayerCardsImages();
 
-            if (gameLogic.getLastCard() != null)
-                setUsedCardButton(gameLogic.getLastCard().resourceId);
-            else
+            if (gameLogic.getLastCard() == null || gameLogic.getLastCard().resourceId == 0 ) {
                 setUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
+            }
+            else {
+                setUsedCardButton(gameLogic.getLastCard().resourceId);
+            }
 
             if (gameLogic.getBeforeLastCard() != null)
                 setBeforeUsedCardButton(gameLogic.getBeforeLastCard().resourceId);

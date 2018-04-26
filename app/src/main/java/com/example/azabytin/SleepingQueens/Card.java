@@ -13,12 +13,16 @@ public class Card implements java.io.Serializable{
         this( t, r, 0);
     }
 
+    public Card( cardType t)
+    {
+        this( t, 0, 0);
+    }
+
     public Card( cardType t, int r, int v )
     {
       type = t;
       resourceId = r;
       value = v;
-      //markedToPlay = false;
     }
 
     protected int resourceId;
@@ -32,15 +36,6 @@ public class Card implements java.io.Serializable{
     }
 
     protected cardType type;
-
-//    protected boolean markedToPlay;
-//    public boolean isMarkedToPlay() {
-//        return markedToPlay;
-//    }
-//    public void setMarkedToPlay(boolean b) {
-//         markedToPlay = b;
-//    }
-
 
     public boolean isKnight( ){return type == cardType.knight; };
     public boolean isStick( ){return type == cardType.stick; };

@@ -9,16 +9,6 @@ import java.util.List;
 
 public class PlayCardCreater implements CardCreater {
 
-    public ArrayList<Card> CreateKingCard(){
-        ArrayList<Card> res =  new ArrayList<Card>();
-        res.add(new Card( Card.cardType.king, com.example.azabytin.SleepingQueens.R.drawable.king1 ));
-        return res;
-    }
-    public ArrayList<Card> CreateNumberCard(){
-        ArrayList<Card> res =  new ArrayList<Card>();
-        res.add(new Card( Card.cardType.number, com.example.azabytin.SleepingQueens.R.drawable.card1, 1 ));
-        return res;
-    }
     public List<Card> createPlayCards()
     {
         List<Card> cards= new ArrayList<Card>();
