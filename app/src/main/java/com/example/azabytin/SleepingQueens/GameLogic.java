@@ -1,5 +1,7 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,8 +84,11 @@ public void startNewGame()
         refillCardsFromStack( player );
     }
 
-    protected boolean IsCardsValidToPlay(ArrayList<Card> cardsToPlay)
+    protected boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
     {
+        if( !player.canUserPlay ){
+            return false;
+        }
         if(cardsToPlay.size() == 1){
             return true;
         }
@@ -106,7 +111,7 @@ public void startNewGame()
 
     public boolean userPlayCards(ArrayList<Card> cardsToPlay)
     {
-        if( !IsCardsValidToPlay( cardsToPlay ) )
+        if( !IsCardsCanBePlayed( player, cardsToPlay ) )
             return false;
 
         for (Card card: cardsToPlay) {
@@ -126,7 +131,7 @@ public void startNewGame()
             ai.ChooseOponentCardToPlay(getLastCard().getType(), cardsToPlay );
         }
 
-        if( !IsCardsValidToPlay( cardsToPlay ) )
+        if( !IsCardsCanBePlayed( opponent, cardsToPlay ) )
             return false;
 
         for (Card card: cardsToPlay) {

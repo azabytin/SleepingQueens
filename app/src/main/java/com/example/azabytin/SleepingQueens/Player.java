@@ -92,7 +92,7 @@ public class Player implements java.io.Serializable
         return canUserPlay;
     }
 
-    public void setCanUserPlay(boolean canUserPlay) {
-        this.canUserPlay = canUserPlay;
+    public void setCanUserPlay(boolean _canUserPlay) {
+        canUserPlay = _canUserPlay;
     }
 }

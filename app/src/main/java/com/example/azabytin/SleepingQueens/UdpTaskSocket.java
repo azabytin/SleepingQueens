@@ -80,12 +80,10 @@ class UdpTaskSocket extends Thread  {
                 message.obj = gameLogic;
                 uiThreadHandler.sendMessage(message);
 
-                //serverLoopUdp(gameLogic, responsePkt.getOtherHost());
                 serverLoop(gameLogic);
             }
             else {
                 Thread.sleep(1000);
-                //clientLoopUdp( responsePkt.getOtherHost() );
                 clientLoop( responsePkt.getOtherHost() );
             }
         }
