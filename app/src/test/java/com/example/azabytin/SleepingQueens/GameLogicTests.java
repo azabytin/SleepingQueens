@@ -17,7 +17,18 @@ import static org.junit.Assert.*;
 
 
 public class GameLogicTests extends Assert {
-    private GameLogic gameLogic = new GameLogic();
+
+    class GameLogicMocked extends GameLogic
+    {
+        protected void refillCardsFromStack(){
+            refillCardsFromStack(player);
+            refillCardsFromStack(opponent);
+        }
+
+    }
+
+
+    private GameLogicMocked gameLogic = new GameLogicMocked();
     private PlayCardCreater playCardCreater = new PlayCardCreater();
 
 

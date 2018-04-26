@@ -19,20 +19,24 @@ public class GameLogic implements iGameLogic, java.io.Serializable {
 
     protected ArrayList<Card> playedCards = new ArrayList<>();
 
-public void startNewGame()
-{
-    queenCardsStack = new PlayCardsStack( new QueenCardCreater());
-    playCardsStack = new PlayCardsStack( new PlayCardCreater());
+    public void startNewGame()
+    {
+        queenCardsStack = new PlayCardsStack( new QueenCardCreater());
+        playCardsStack = new PlayCardsStack( new PlayCardCreater());
 
-    player = new Player();
-    opponent = new Player(player);
-    player.setCanUserPlay(true);
-    opponent.setCanUserPlay(false);
-    player.SetOpponent(this.opponent);
+        player = new Player();
+        opponent = new Player(player);
+        player.setCanUserPlay(true);
+        opponent.setCanUserPlay(false);
+        player.SetOpponent(this.opponent);
 
-    refillCardsFromStack(player);
-    refillCardsFromStack(opponent);
-}
+        refillCardsFromStack();
+    }
+
+    protected void refillCardsFromStack(){
+        refillCardsFromStack(player);
+        refillCardsFromStack(opponent);
+    }
 
     protected void refillCardsFromStack(Player player){
 
@@ -81,7 +85,7 @@ public void startNewGame()
             }
         }
         DropPlayerCard( card, player);
-        refillCardsFromStack( player );
+        refillCardsFromStack( );
     }
 
     protected boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
