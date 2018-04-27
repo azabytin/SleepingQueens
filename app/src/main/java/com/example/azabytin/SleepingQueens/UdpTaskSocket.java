@@ -25,19 +25,33 @@ import lipermi.net.Server;
 
 class UdpTaskSocket extends Thread  {
 
-    protected BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
+    public class executePlayCards implements Runnable
+    {
+        private ArrayList<Card> cards;
+        public executePlayCards(ArrayList<Card> _cards){
+            cards = _cards;
+        }
+        public void run(){
+            cardsToPlay = cards;
+        }
+    }
+
+    private ArrayList<Card> cardsToPlay = null;
     protected int loopCount = Integer.MAX_VALUE;
+    protected GameLogic game;
 
     public void stopThread(){
         loopCount = 2;
     }
-    public UdpTaskSocket( Handler uiThreadHandler_ )
+    public UdpTaskSocket( Handler uiThreadHandler_, GameLogic _game )
     {
+        game = _game;
         uiThreadHandler = uiThreadHandler_;
 
     }
 
     protected Handler uiThreadHandler;
+    protected Handler threadHandler = new Handler();
 
     @Override
     public void run() {
@@ -73,13 +87,7 @@ class UdpTaskSocket extends Thread  {
 
             GameLogic gameLogic = null;
             if( workAsServer  ){
-                gameLogic = new GameLogic();
-                gameLogic.startNewGame();
-
-                Message message = uiThreadHandler.obtainMessage();
-                message.obj = gameLogic;
-                uiThreadHandler.sendMessage(message);
-
+                uiThreadHandler.post(new MainActivity().new executeInitServerGameLogic(game));
                 serverLoop(gameLogic);
             }
             else {
@@ -120,9 +128,7 @@ class UdpTaskSocket extends Thread  {
 
                 if (cardsToPlay.size() > 0) {
                     Log.i("serverLoop", "readCardsToPlay have cards");
-                    Message message = uiThreadHandler.obtainMessage();
-                    message.obj = cardsToPlay;
-                    uiThreadHandler.sendMessage(message);
+                    uiThreadHandler.post( new MainActivity().new executePlayCards(cardsToPlay) );
                 }
             } catch (Exception e) {
                 Log.e("serverLoop", "Exception");
@@ -136,7 +142,7 @@ class UdpTaskSocket extends Thread  {
             try {
                 Thread.sleep(300);
 
-                ClientGameLogic clientLogic = new ClientGameLogic(messageQueue);
+                GameState clientLogic = new GameState(threadHandler);
                 Log.i("clientLogic", "start");
                 ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
                 Log.i("clientLogic", "Created ");
@@ -147,12 +153,10 @@ class UdpTaskSocket extends Thread  {
                 GameLogic gameLogic = clientSerializer.readGameLogic();
                 Log.i("clientLogic", "readGameLogic done");
 
-                Message message = uiThreadHandler.obtainMessage();
                 clientLogic.Init(gameLogic);
-                message.obj = clientLogic;
-                uiThreadHandler.sendMessage(message);
+                uiThreadHandler.post(new MainActivity().new executeUpdateClientGameLogic(clientLogic));
 
-                clientSerializer.writeCardsToPlay(messageQueue.poll(100, TimeUnit.MILLISECONDS));
+                clientSerializer.writeCardsToPlay();
                 Log.i("clientLogic", "writeCardsToPlay done");
 
             } catch (Exception e) {
@@ -228,14 +232,15 @@ class UdpTaskSocket extends Thread  {
             return res;
         }
 
-        public void writeCardsToPlay(Message msg) throws java.io.IOException, java.lang.ClassNotFoundException
+        public void writeCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
         {
             if( oos == null )
                 oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
 
-            ArrayList<Card> cardsToPlay = new ArrayList<Card>();
-            if( msg != null ){
-                cardsToPlay = (ArrayList<Card>)msg.obj;
+            ArrayList<Card> cardsToPlayToSend = new ArrayList<Card>();
+            if( cardsToPlay != null ){
+                cardsToPlayToSend = cardsToPlay;
+                cardsToPlay = null;
                 Log.i("ClientSocketSerializer", "Have cards to play: " + cardsToPlay.size());
             }
             oos.writeObject(cardsToPlay);

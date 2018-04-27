@@ -2,7 +2,6 @@ package com.example.azabytin.SleepingQueens;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,32 +17,58 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    protected iGameLogic gameLogic;
-    protected Hashtable< Integer, Card> viewToCardHash;
-    protected ArrayList<Card> cardsToPlay;
+    protected iGame gameLogic;
+    protected Hashtable< Integer, Card> cardButtonToCardHash;
+    protected ArrayList<Card> selectedCardsToPlay;
     UdpTaskSocket udpTask = null;
 
-    protected Handler udpHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                if( msg.obj instanceof ArrayList){
-                    gameLogic.oponentPlayCards((ArrayList<Card>) msg.obj);
-                    UpdateCardsView();
-                }
-                else {
-                    boolean updateView = false;
-                    if( gameLogic == null || gameLogic.canUserPlay()){
-                        updateView = true;
-                    }
-                    if( udpTask != null ) {
-                        gameLogic = (iGameLogic) msg.obj;
-                    }
-                    if(updateView) {
-                        UpdateCardsView();
-                    }
-                }
+    public class executePlayCards implements Runnable{
+
+        private ArrayList<Card> playCards;
+        executePlayCards(ArrayList<Card> _playCards){
+            playCards = _playCards;
+        }
+
+        public void run(){
+            gameLogic.oponentPlayCards(playCards);
+            UpdateCardsView();
+        }
+
+    }
+    public class executeInitServerGameLogic implements Runnable{
+
+        private GameLogic game;
+        executeInitServerGameLogic(GameLogic _game){
+            game = _game;
+        }
+
+        public void run(){
+            gameLogic = gameLogic;
+            gameLogic.startNewGame();
+            UpdateCardsView();
+        }
+
+    }
+
+    public class executeUpdateClientGameLogic implements Runnable{
+
+        private iGame game;
+        executeUpdateClientGameLogic(iGame _game){
+            game = _game;
+        }
+
+        public void run(){
+            if( udpTask == null ) {
+                return;
             }
-    } ;
+
+            gameLogic = game;
+            if( gameLogic.canUserPlay()){
+                UpdateCardsView();
+            }
+        }
+    }
+    protected Handler udpHandler = new Handler();
 
     protected Handler timerHandler = new Handler();
     protected Runnable timerRunnable = new Runnable()  {
@@ -82,8 +107,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void CleanUp()
     {
         gameLogic = null;
-        viewToCardHash = new Hashtable<Integer, Card>();
-        cardsToPlay = new ArrayList<Card>();
+        cardButtonToCardHash = new Hashtable<Integer, Card>();
+        selectedCardsToPlay = new ArrayList<Card>();
 
         if( udpTask != null ){
             udpTask.stopThread();
@@ -110,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     protected  void OnStartTwoPlayerGame()
     {
-        udpTask = new UdpTaskSocket(udpHandler);
+        udpTask = new UdpTaskSocket(udpHandler, new GameLogic());
         Thread thread = new Thread(udpTask);
         thread.start();
         UpdateCardsView();
@@ -165,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onClickPlay( View v) {
-        if( gameLogic.userPlayCards( cardsToPlay ) ){
-            cardsToPlay.clear();
+        if( gameLogic.userPlayCards(selectedCardsToPlay) ){
+            selectedCardsToPlay.clear();
             UpdateCardsView();
         }
     }
@@ -174,12 +199,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
     public void onClick( View v) {
         try {
-            Card card = viewToCardHash.get(v.getId());
+            Card card = cardButtonToCardHash.get(v.getId());
 
-            if( cardsToPlay.contains(card)){
-                cardsToPlay.remove(card);
+            if( selectedCardsToPlay.contains(card)){
+                selectedCardsToPlay.remove(card);
             }else{
-                cardsToPlay.add(card);
+                selectedCardsToPlay.add(card);
             }
         }
         catch(Exception e)
@@ -201,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int buttonId = com.example.azabytin.SleepingQueens.R.id.cardButton1 + i;
             button = findViewById( buttonId);
 
-            if( cardsToPlay.contains( viewToCardHash.get(buttonId) ))
+            if( selectedCardsToPlay.contains( cardButtonToCardHash.get(buttonId) ))
             {
                 button.setBackgroundResource( R.color.colorAccent );
             }
@@ -216,10 +241,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void SetPlayerCardsImages(){
 
         int i = 0;
-        viewToCardHash.clear();
+        cardButtonToCardHash.clear();
         List<Card> playerCards= gameLogic.getPlayerCards();
         for( Card card : playerCards ){
-            viewToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card );
+            cardButtonToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card );
         }
     }
 
@@ -244,10 +269,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setButtonsImages(gameLogic.getPlayerQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
             setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
-            if (gameLogic.whoIsWinner() == iGameLogic.Winner.PlayerWinner) {
+            if (gameLogic.whoIsWinner() == iGame.Winner.PlayerWinner) {
                 CleanUp();
                 showWinMessage("Вы выиграли");
-            } else if (gameLogic.whoIsWinner() == iGameLogic.Winner.OpponentWinner) {
+            } else if (gameLogic.whoIsWinner() == iGame.Winner.OpponentWinner) {
                 CleanUp();
                 showWinMessage("Вы проиграли!");
             }

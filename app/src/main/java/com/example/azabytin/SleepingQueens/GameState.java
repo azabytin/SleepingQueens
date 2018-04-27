@@ -1,5 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  * Created by azabytin on 04.04.2018.
  */
 
-public class ClientGameLogic implements iGameLogic {
+public class GameState implements iGame {
 
     protected List<Card> ComputerQueenCards;
     protected List<Card> HumanQueenCards;
@@ -19,19 +20,19 @@ public class ClientGameLogic implements iGameLogic {
     protected List<Card> ComputerCards;
     Card LastCard;
     Card BeforeLastCard;
-    iGameLogic.Winner whoWinner;
+    iGame.Winner whoWinner;
     boolean canUserPlay;
-    iGameLogic serverLogic;
+    iGame serverLogic;
 
-    BlockingQueue<Message> messaQequeue;
+    Handler threadHandler;
 
 
-    public ClientGameLogic(BlockingQueue<Message> _messaQequeue)
+    public GameState(Handler _threadHandler)
     {
-        messaQequeue = _messaQequeue;
+        threadHandler = _threadHandler;
     }
 
-    public void Init( iGameLogic _serverLogic){
+    public void Init( iGame _serverLogic){
         HumanCards = _serverLogic.getOpponentCards();
             ComputerQueenCards = _serverLogic.getPlayerQueenCards();
             HumanQueenCards = _serverLogic.getOpponentQueenCards();
@@ -65,7 +66,7 @@ public class ClientGameLogic implements iGameLogic {
     public Card getBeforeLastCard(){
         return BeforeLastCard;
     }
-    public iGameLogic.Winner whoIsWinner(){
+    public iGame.Winner whoIsWinner(){
         if( whoWinner == Winner.PlayerWinner )
             return Winner.OpponentWinner;
 
@@ -78,9 +79,9 @@ public class ClientGameLogic implements iGameLogic {
 
         ArrayList<Card> tmp = new ArrayList<Card>();
         tmp.addAll(_cardsToPlay);
-        Message message = new Message();
-        message.obj = tmp;
-        messaQequeue.add( message );
+
+        threadHandler.post( new UdpTaskSocket(null,null).new executePlayCards(tmp) );
+
         Log.i("ClientGameLogic", "Send cards to play");
         return true;
     }

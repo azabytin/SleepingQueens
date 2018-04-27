@@ -1,7 +1,5 @@
 package com.example.azabytin.SleepingQueens;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +7,7 @@ import java.util.List;
  * Created by azabytin on 16.01.2018.
  */
 
-public class GameLogic implements iGameLogic, java.io.Serializable {
+public class GameLogic implements iGame, java.io.Serializable {
 
     protected PlayCardsStack playCardsStack;
     protected PlayCardsStack queenCardsStack;
@@ -187,7 +185,7 @@ public class GameLogic implements iGameLogic, java.io.Serializable {
         }
         return null;
 }
-    public iGameLogic.Winner whoIsWinner()
+    public iGame.Winner whoIsWinner()
     {
         if( player.GetQueenCards().size()>4 )
             return Winner.PlayerWinner;

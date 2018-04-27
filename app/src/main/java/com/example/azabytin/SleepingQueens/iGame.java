@@ -7,7 +7,7 @@ import java.util.List;
  * Created by azabytin on 20.03.2018.
  */
 
-public interface iGameLogic {
+public interface iGame {
     enum Winner
     {
         PlayerWinner,

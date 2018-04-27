@@ -173,29 +173,3 @@ public class GameLogicTests extends Assert {
 
 }
 
-
-
-/*
-@RunWith(MockitoJUnitRunner.class)
-public class UnitTestSample {
-
-    private static final String FAKE_STRING = "HELLO WORLD";
-
-    @Mock
-    Context mMockContext;
-
-    @Test
-    public void readStringFromContext_LocalizedString() {
-        // Given a mocked Context injected into the object under test...
-        when(mMockContext.getString(R.string.hello_word))
-                .thenReturn(FAKE_STRING);
-        ClassUnderTest myObjectUnderTest = new ClassUnderTest(mMockContext);
-
-        // ...when the string is returned from the object under test...
-        String result = myObjectUnderTest.getHelloWorldString();
-
-        // ...then the result should be the expected one.
-        assertThat(result, is(FAKE_STRING));
-    }
-}
-*/
