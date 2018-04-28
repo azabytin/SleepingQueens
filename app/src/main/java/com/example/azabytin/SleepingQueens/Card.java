@@ -36,6 +36,10 @@ public class Card implements java.io.Serializable{
     }
 
     protected cardType type;
+    protected boolean roseQueen = false;
+
+    public void setRoseQueen(){roseQueen = true;}
+    public boolean isRoseQueen(){return roseQueen;}
 
     public boolean isKnight( ){return type == cardType.knight; };
     public boolean isStick( ){return type == cardType.stick; };
