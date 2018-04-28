@@ -1,7 +1,9 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,7 +22,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected iGame gameLogic;
     protected Hashtable< Integer, Card> cardButtonToCardHash;
     protected ArrayList<Card> selectedCardsToPlay;
-    UdpTaskSocket udpTask = null;
+    NetworkGameThread networkGameThread = null;
+    boolean needUpdate = true;
+    protected ProgressDialog networkConnectProgressDialog = null;
 
     public class executePlayCards implements Runnable{
 
@@ -43,9 +47,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         public void run(){
-            gameLogic = gameLogic;
-            gameLogic.startNewGame();
-            UpdateCardsView();
+            if( game != null) {
+                gameLogic = game;
+                gameLogic.startNewGame();
+                UpdateCardsView();
+            }
+            if( networkConnectProgressDialog != null ){
+                networkConnectProgressDialog.dismiss();
+                networkConnectProgressDialog = null;
+            }
         }
 
     }
@@ -58,13 +68,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         public void run(){
-            if( udpTask == null ) {
+            if( networkGameThread == null ) {
                 return;
             }
 
             gameLogic = game;
-            if( gameLogic.canUserPlay()){
+            if(needUpdate || gameLogic.canUserPlay()){
                 UpdateCardsView();
+            }
+
+            if( networkConnectProgressDialog != null ){
+                networkConnectProgressDialog.dismiss();
+                networkConnectProgressDialog = null;
             }
         }
     }
@@ -110,9 +125,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardButtonToCardHash = new Hashtable<Integer, Card>();
         selectedCardsToPlay = new ArrayList<Card>();
 
-        if( udpTask != null ){
-            udpTask.stopThread();
-            udpTask = null;
+        if( networkGameThread != null ){
+            networkGameThread.stopThread();
+            try{
+                networkGameThread.join();
+                networkGameThread = null;
+            }catch (Exception e){}
         }
     }
     protected void onStartNewGame()
@@ -135,10 +153,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     protected  void OnStartTwoPlayerGame()
     {
-        udpTask = new UdpTaskSocket(udpHandler, new GameLogic());
-        Thread thread = new Thread(udpTask);
+        networkGameThread = new NetworkGameThread(this,udpHandler, new GameLogic());
+        Thread thread = new Thread(networkGameThread);
         thread.start();
         UpdateCardsView();
+
+        networkConnectProgressDialog = new ProgressDialog(this);
+        networkConnectProgressDialog.setMessage("Жду второго игрока... ");
+        networkConnectProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        networkConnectProgressDialog.setIndeterminate(true);
+        networkConnectProgressDialog.setCancelable(false);
+        Message msg = new Message();
+
+        networkConnectProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                CleanUp();
+                onStartNewGame();
+            }
+        });
+
+        networkConnectProgressDialog.show();
+
     }
     protected  void OnStartOnePlayerGame()
     {
@@ -155,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
         timerHandler.postDelayed(timerRunnable, 0);
-        //onStartNewGame();
     }
 
     protected void setButtonsImages( List<Card> cards, int firstButton )
@@ -190,13 +226,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onClickPlay( View v) {
-        if( gameLogic.userPlayCards(selectedCardsToPlay) ){
-            selectedCardsToPlay.clear();
-            UpdateCardsView();
-        }
+
+        new AsyncTask<Void, Boolean, Boolean>() {
+            @Override
+            protected Boolean doInBackground( final Void ... params ) {
+                return gameLogic.userPlayCards(selectedCardsToPlay);
+            }
+
+            @Override
+            protected void onPostExecute( final Boolean result ) {
+                if( result ) {
+                    selectedCardsToPlay.clear();
+                    UpdateCardsView();
+                    needUpdate = true;
+                }
+            }
+        }.execute();
     }
 
-        @Override
+    @Override
     public void onClick( View v) {
         try {
             Card card = cardButtonToCardHash.get(v.getId());

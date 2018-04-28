@@ -95,4 +95,13 @@ public class Player implements java.io.Serializable
     public void setCanUserPlay(boolean _canUserPlay) {
         canUserPlay = _canUserPlay;
     }
+
+    public boolean hasWinCombination(){
+        int value = 0;
+        for( Card card: queenCards){
+            value += card.getValue();
+        }
+        return (value >= 50) || (queenCards.size() > 4);
+    }
+
 }

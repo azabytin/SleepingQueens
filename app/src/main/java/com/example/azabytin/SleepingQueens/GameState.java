@@ -25,10 +25,11 @@ public class GameState implements iGame {
     iGame serverLogic;
 
     Handler threadHandler;
+    NetworkGameThread executorThread;
 
-
-    public GameState(Handler _threadHandler)
+    public GameState(NetworkGameThread _executorThread, Handler _threadHandler)
     {
+        executorThread = _executorThread;
         threadHandler = _threadHandler;
     }
 
@@ -80,7 +81,7 @@ public class GameState implements iGame {
         ArrayList<Card> tmp = new ArrayList<Card>();
         tmp.addAll(_cardsToPlay);
 
-        threadHandler.post( new UdpTaskSocket(null,null).new executePlayCards(tmp) );
+        threadHandler.post( executorThread.new executePlayCards(tmp) );
 
         Log.i("ClientGameLogic", "Send cards to play");
         return true;

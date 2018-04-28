@@ -46,6 +46,15 @@ public class NegotiationPkt {
         String myAddr = NetUtils.getIPAddress(true);
         return otherSideAddr.equals(myAddr);
     }
+    public String getPaierInfo(){
+        String res = "MyIP:";
+        res = res + NetUtils.getIPAddress(true);
+        res = res + " pairIP:";
+        res = res + pkt.getAddress().getHostName();
+        return res;
+    }
+
+
     public static boolean isIamServer(NegotiationPkt broadcastRequestPkt, NegotiationPkt responsePkt){
 
         String myhost = broadcastRequestPkt.getMyHost();

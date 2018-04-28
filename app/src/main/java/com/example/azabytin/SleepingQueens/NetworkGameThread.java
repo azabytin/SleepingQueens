@@ -23,7 +23,7 @@ import lipermi.net.Server;
  * Created by azabytin on 15.03.2018.
  */
 
-class UdpTaskSocket extends Thread  {
+class NetworkGameThread extends Thread  {
 
     public class executePlayCards implements Runnable
     {
@@ -31,23 +31,27 @@ class UdpTaskSocket extends Thread  {
         public executePlayCards(ArrayList<Card> _cards){
             cards = _cards;
         }
-        public void run(){
-            cardsToPlay = cards;
+
+        public void run() {
+            cardsToPlay = new ArrayList<Card>();
+            cardsToPlay.addAll(cards);
         }
     }
 
     private ArrayList<Card> cardsToPlay = null;
     protected int loopCount = Integer.MAX_VALUE;
     protected GameLogic game;
+    MainActivity parentmainActivity;
 
     public void stopThread(){
         loopCount = 2;
     }
-    public UdpTaskSocket( Handler uiThreadHandler_, GameLogic _game )
+    public NetworkGameThread( MainActivity _parentmainActivity, Handler uiThreadHandler_, GameLogic _game )
     {
+        parentmainActivity = _parentmainActivity;
         game = _game;
         uiThreadHandler = uiThreadHandler_;
-
+        Log.i("NetworkGameThread", "Created" );
     }
 
     protected Handler uiThreadHandler;
@@ -56,6 +60,7 @@ class UdpTaskSocket extends Thread  {
     @Override
     public void run() {
         try {
+            Log.i("NetworkGameThread", "Run " + getId());
             DatagramSocket udpSocketForNegotiation = new DatagramSocket(55555);
             udpSocketForNegotiation.setSoTimeout(100);
 
@@ -63,7 +68,8 @@ class UdpTaskSocket extends Thread  {
             NegotiationPkt responsePkt = new NegotiationPkt( false);;
 
             boolean waitingResponse = true;
-            while ( waitingResponse ) {
+            Log.i("NetworkGameThread", "Wainting for response " + getId());
+            while ( waitingResponse && (loopCount-- > 0)) {
                 udpSocketForNegotiation.send(broadcastRequestPkt.Pkt());
 
                 try{
@@ -72,6 +78,7 @@ class UdpTaskSocket extends Thread  {
                         continue;
                     } else {
                         waitingResponse = false;
+                        Log.i("NetworkGameThread", responsePkt.getPaierInfo() + getId());
                         udpSocketForNegotiation.send(broadcastRequestPkt.Pkt());
                     }
 
@@ -85,83 +92,89 @@ class UdpTaskSocket extends Thread  {
                 workAsServer = true;
             }
 
-            GameLogic gameLogic = null;
+            udpSocketForNegotiation.close();
             if( workAsServer  ){
-                uiThreadHandler.post(new MainActivity().new executeInitServerGameLogic(game));
-                serverLoop(gameLogic);
+                uiThreadHandler.post( parentmainActivity.new executeInitServerGameLogic(game));
+                Log.i("NetworkGameThread", "Start as server" );
+                serverLoop(game);
             }
             else {
                 Thread.sleep(1000);
+                Log.i("NetworkGameThread", "Start as client" );
                 clientLoop( responsePkt.getOtherHost() );
             }
+
+            Log.i("NetworkGameThread", "Thread terminated " + getId());
         }
         catch(Exception ex)
         {
             String s = ex.getMessage();
+            Log.e("NetworkGameThread", "Thread terminated. Exception: " + s);
         }
     }
 
     private void serverLoop(GameLogic gameLogic) {
 
-        Log.i("serverLoop", "Start serverLoop");
+        Log.i("NetworkGameThread::serverLoop", "Start serverLoop" + getId());
         ServerSocketSerializer serverSerializer = null;
         try {
             serverSerializer = new ServerSocketSerializer();
 
         }catch (java.io.IOException e){
-            Log.i("serverLoop", "Create ServerSocketSerializer fail");
+            Log.i("NetworkGameThread::serverLoop", "Create ServerSocketSerializer fail"+ getId());
         }
-        Log.i("serverLoop", "Create ServerSocketSerializer ");
+        Log.i("NetworkGameThread::serverLoop", "Create ServerSocketSerializer "+ getId());
 
-        while (loopCount-- != 0) {
+        while (loopCount-- > 0) {
             try {
 
-                Log.i("serverLoop", "Accepting connection");
+                Log.i("NetworkGameThread::serverLoop", "Accepting connection");
                 serverSerializer.accept();
-                Log.i("serverLoop", "Accepted connection");
+                Log.i("NetworkGameThread::serverLoop", "Accepted connection");
 
                 serverSerializer.writeGameLogic(gameLogic);
-                Log.i("serverLoop", "Write game logic done");
+                Log.i("NetworkGameThread::serverLoop", "Write game logic done");
 
                 ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
-                Log.i("serverLoop", "readCardsToPlay done");
+                Log.i("NetworkGameThread::serverLoop", "readCardsToPlay done");
 
                 if (cardsToPlay.size() > 0) {
-                    Log.i("serverLoop", "readCardsToPlay have cards");
-                    uiThreadHandler.post( new MainActivity().new executePlayCards(cardsToPlay) );
+                    Log.i("NetworkGameThread::serverLoop", "readCardsToPlay have cards");
+                    uiThreadHandler.post( parentmainActivity.new executePlayCards(cardsToPlay) );
                 }
             } catch (Exception e) {
-                Log.e("serverLoop", "Exception");
+                Log.e("NetworkGameThread::serverLoop", "Exception");
             }
         }
+        serverSerializer.close();
     }
 
     private void clientLoop(String host)throws java.lang.InterruptedException, java.io.IOException{
 
-        while (loopCount-- != 0) {
+        while (loopCount-- > 0) {
             try {
                 Thread.sleep(300);
 
-                GameState clientLogic = new GameState(threadHandler);
-                Log.i("clientLogic", "start");
+                GameState clientLogic = new GameState(this, threadHandler);
+                Log.i("NetworkGameThread::clientLoop", "start");
                 ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
-                Log.i("clientLogic", "Created ");
+                Log.i("NetworkGameThread::clientLoop", "Created ");
                 clientSerializer.connect(host);
 
-                Log.i("clientLogic", "connected done");
+                Log.i("NetworkGameThread::clientLoop", "connected done");
 
                 GameLogic gameLogic = clientSerializer.readGameLogic();
-                Log.i("clientLogic", "readGameLogic done");
+                Log.i("NetworkGameThread::clientLoop", "readGameLogic done");
 
                 clientLogic.Init(gameLogic);
-                uiThreadHandler.post(new MainActivity().new executeUpdateClientGameLogic(clientLogic));
+                uiThreadHandler.post(parentmainActivity.new executeUpdateClientGameLogic(clientLogic));
 
                 clientSerializer.writeCardsToPlay();
-                Log.i("clientLogic", "writeCardsToPlay done");
+                Log.i("NetworkGameThread::clientLoop", "writeCardsToPlay done");
 
             } catch (Exception e) {
-                Log.i("clientLogic", "Exception");
-                Thread.sleep(1000);
+                Log.i("NetworkGameThread::clientLoop", "Exception");
+                Thread.sleep(300);
                 String s = e.getMessage();
             }
         }
@@ -181,6 +194,11 @@ class UdpTaskSocket extends Thread  {
             ssChannel.configureBlocking(true);
             ssChannel.socket().bind(new InetSocketAddress(50000));
         }
+        public void close(){
+            try {
+                ssChannel.close();
+            }catch (Exception e){}
+        }
 
         public void accept()throws java.io.IOException
         {
@@ -199,7 +217,7 @@ class UdpTaskSocket extends Thread  {
                 Object o = ois.readObject();
                 return (ArrayList<Card>) o;
             }catch (Exception e){
-                Log.e("ServerSocketSerializer", "fail to readCardsToPlay");
+                Log.e("NetworkGameThread::ServerSocketSerializer", "fail to readCardsToPlay");
                 return null;
             }
         }
@@ -234,16 +252,15 @@ class UdpTaskSocket extends Thread  {
 
         public void writeCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
         {
-            if( oos == null )
+            if (oos == null)
                 oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
 
-            ArrayList<Card> cardsToPlayToSend = new ArrayList<Card>();
-            if( cardsToPlay != null ){
-                cardsToPlayToSend = cardsToPlay;
+            if (cardsToPlay != null) {
+                oos.writeObject(cardsToPlay);
                 cardsToPlay = null;
-                Log.i("ClientSocketSerializer", "Have cards to play: " + cardsToPlay.size());
+            } else {
+                oos.writeObject(new ArrayList<Card>());
             }
-            oos.writeObject(cardsToPlay);
         }
 
         public GameLogic readGameLogic() throws java.io.IOException, java.lang.ClassNotFoundException

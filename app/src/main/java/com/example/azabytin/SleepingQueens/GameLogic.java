@@ -37,10 +37,8 @@ public class GameLogic implements iGame, java.io.Serializable {
     }
 
     protected void refillCardsFromStack(Player player){
-
-        player.AddCard(playCardsStack.Get());
-
         if(player.CardsNumber()  < 5){
+            player.AddCard(playCardsStack.Get());
             refillCardsFromStack( player );
         }
     }
@@ -62,7 +60,7 @@ public class GameLogic implements iGame, java.io.Serializable {
 
     public void playCard(Player player, Card card )
     {
-        if(getLastCard()!= null && getLastCard().isDragon() && !card.isKnight()){
+        if(getLastCard()!= null && getLastCard().isKnight() && !card.isDragon()){
             player.GiveOponentQueen();
         }
 
@@ -74,6 +72,9 @@ public class GameLogic implements iGame, java.io.Serializable {
             player.AddQueenCard( queenCardsStack.Get() );
         }
 
+        DropPlayerCard( card, player);
+        refillCardsFromStack( );
+
         if( card.isJocker()){
             if(  player.GetLastAddedCard().isOddNumver() ){
                 player.AddQueenCard( queenCardsStack.Get() );
@@ -82,8 +83,6 @@ public class GameLogic implements iGame, java.io.Serializable {
                 player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
             }
         }
-        DropPlayerCard( card, player);
-        refillCardsFromStack( );
     }
 
     protected boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
@@ -187,9 +186,9 @@ public class GameLogic implements iGame, java.io.Serializable {
 }
     public iGame.Winner whoIsWinner()
     {
-        if( player.GetQueenCards().size()>4 )
+        if( player.hasWinCombination() )
             return Winner.PlayerWinner;
-        else if( opponent.GetQueenCards().size()>4)
+        else if( opponent.hasWinCombination() )
             return Winner.OpponentWinner;
 
         return Winner.NoWinner;

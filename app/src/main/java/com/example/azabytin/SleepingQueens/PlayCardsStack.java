@@ -20,6 +20,8 @@ public class PlayCardsStack  implements java.io.Serializable{
         if( cards==null || cards.size() == 0 ){
             cards = cardCreater.createPlayCards();
             Collections.shuffle( cards );
+            Collections.shuffle( cards );
+            Collections.shuffle( cards );
         }
         Card card = cards.get(0);
         cards.remove( 0 );
