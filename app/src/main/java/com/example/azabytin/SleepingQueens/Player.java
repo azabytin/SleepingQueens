@@ -26,6 +26,15 @@ public class Player implements java.io.Serializable
         queenCards = new ArrayList<Card>();
     }
 
+    public void play(){
+        canUserPlay = false;
+        opponent.setCanUserPlay( true);
+    }
+
+    public void setPlayAgian(){
+        canUserPlay = true;
+        opponent.setCanUserPlay( false );
+    }
 
     public UserCards GetCards(){
         return сards;
@@ -61,9 +70,29 @@ public class Player implements java.io.Serializable
         return сards.hasThisNumber(card);
     }
 
-    public void AddQueenCard( Card card)
+    protected boolean hasDogCatQueen(){
+        for( Card card : queenCards){
+            if( card.isDogCatQueen()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void AddQueenCard( PlayCardsStack queensStack)
     {
-        queenCards.add(0, card);
+        Card queenCard = queensStack.Get();
+
+        if( queenCard.isDogCatQueen() && hasDogCatQueen()){
+            queensStack.Add(queenCard);
+        }
+        else{
+            queenCards.add(0, queenCard);
+        }
+
+        if( queenCard.isRoseQueen() ){
+            queenCards.add(0, queensStack.Get());
+        }
     }
 
     public void AddCard( Card card)
@@ -96,7 +125,7 @@ public class Player implements java.io.Serializable
         canUserPlay = _canUserPlay;
     }
 
-    public boolean hasWinCombination(){
+    public boolean hasWinnigCombination(){
         int value = 0;
         for( Card card: queenCards){
             value += card.getValue();

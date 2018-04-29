@@ -28,7 +28,8 @@ public class PlayCardsStack  implements java.io.Serializable{
         return card;
     }
     public void Add( Card card ){
-
+        cards.add(card);
+        Collections.shuffle( cards );
     }
 
 }

@@ -39,13 +39,22 @@ class NetworkGameThread extends Thread  {
     }
 
     private ArrayList<Card> cardsToPlay = null;
-    protected int loopCount = Integer.MAX_VALUE;
+    protected Integer  loopCount = Integer.MAX_VALUE;
     protected GameLogic game;
     MainActivity parentmainActivity;
 
     public void stopThread(){
-        loopCount = 2;
+        synchronized (loopCount) {
+            loopCount = 1;
+        }
     }
+    protected boolean isRunning(){
+        synchronized (loopCount) {
+            loopCount--;
+            return loopCount >0;
+        }
+    }
+
     public NetworkGameThread( MainActivity _parentmainActivity, Handler uiThreadHandler_, GameLogic _game )
     {
         parentmainActivity = _parentmainActivity;
@@ -62,14 +71,14 @@ class NetworkGameThread extends Thread  {
         try {
             Log.i("NetworkGameThread", "Run " + getId());
             DatagramSocket udpSocketForNegotiation = new DatagramSocket(55555);
-            udpSocketForNegotiation.setSoTimeout(100);
+            udpSocketForNegotiation.setSoTimeout(200);
 
             NegotiationPkt broadcastRequestPkt = new NegotiationPkt( true );
             NegotiationPkt responsePkt = new NegotiationPkt( false);;
 
             boolean waitingResponse = true;
             Log.i("NetworkGameThread", "Wainting for response " + getId());
-            while ( waitingResponse && (loopCount-- > 0)) {
+            while ( waitingResponse && isRunning() ) {
                 udpSocketForNegotiation.send(broadcastRequestPkt.Pkt());
 
                 try{
@@ -115,35 +124,35 @@ class NetworkGameThread extends Thread  {
 
     private void serverLoop(GameLogic gameLogic) {
 
-        Log.i("NetworkGameThread::serverLoop", "Start serverLoop" + getId());
+        Log.i("NetworkGameThread", "serverLoop::Start serverLoop" + getId());
         ServerSocketSerializer serverSerializer = null;
         try {
             serverSerializer = new ServerSocketSerializer();
 
         }catch (java.io.IOException e){
-            Log.i("NetworkGameThread::serverLoop", "Create ServerSocketSerializer fail"+ getId());
+            Log.i("NetworkGameThread", "serverLoop::Create ServerSocketSerializer fail"+ getId());
         }
-        Log.i("NetworkGameThread::serverLoop", "Create ServerSocketSerializer "+ getId());
+        Log.i("NetworkGameThread", "serverLoop::Create ServerSocketSerializer "+ getId());
 
-        while (loopCount-- > 0) {
+        while (isRunning()) {
             try {
 
-                Log.i("NetworkGameThread::serverLoop", "Accepting connection");
+                Log.i("NetworkGameThread", "serverLoop::Accepting connection");
                 serverSerializer.accept();
-                Log.i("NetworkGameThread::serverLoop", "Accepted connection");
+                Log.i("NetworkGameThread", "serverLoop::Accepted connection");
 
                 serverSerializer.writeGameLogic(gameLogic);
-                Log.i("NetworkGameThread::serverLoop", "Write game logic done");
+                Log.i("NetworkGameThread", "serverLoop::Write game logic done");
 
                 ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
-                Log.i("NetworkGameThread::serverLoop", "readCardsToPlay done");
+                Log.i("NetworkGameThread", "serverLoop::readCardsToPlay done");
 
                 if (cardsToPlay.size() > 0) {
-                    Log.i("NetworkGameThread::serverLoop", "readCardsToPlay have cards");
+                    Log.i("NetworkGameThread", "serverLoop::readCardsToPlay have cards");
                     uiThreadHandler.post( parentmainActivity.new executePlayCards(cardsToPlay) );
                 }
             } catch (Exception e) {
-                Log.e("NetworkGameThread::serverLoop", "Exception");
+                Log.e("NetworkGameThread", "serverLoop::Exception");
             }
         }
         serverSerializer.close();
@@ -151,30 +160,30 @@ class NetworkGameThread extends Thread  {
 
     private void clientLoop(String host)throws java.lang.InterruptedException, java.io.IOException{
 
-        while (loopCount-- > 0) {
+        while (isRunning()) {
             try {
                 Thread.sleep(300);
 
                 GameState clientLogic = new GameState(this, threadHandler);
-                Log.i("NetworkGameThread::clientLoop", "start");
+                Log.i("NetworkGameThread", "clientLoop::start");
                 ClientSocketSerializer clientSerializer = new ClientSocketSerializer();
-                Log.i("NetworkGameThread::clientLoop", "Created ");
+                Log.i("NetworkGameThread:", "clientLoop::Created ");
                 clientSerializer.connect(host);
 
-                Log.i("NetworkGameThread::clientLoop", "connected done");
+                Log.i("NetworkGameThread:", "clientLoop::connected done");
 
                 GameLogic gameLogic = clientSerializer.readGameLogic();
-                Log.i("NetworkGameThread::clientLoop", "readGameLogic done");
+                Log.i("NetworkGameThread", "clientLoop::readGameLogic done");
 
                 clientLogic.Init(gameLogic);
                 uiThreadHandler.post(parentmainActivity.new executeUpdateClientGameLogic(clientLogic));
 
                 clientSerializer.writeCardsToPlay();
-                Log.i("NetworkGameThread::clientLoop", "writeCardsToPlay done");
+                Log.i("NetworkGameThread", "clientLoop::writeCardsToPlay done");
 
             } catch (Exception e) {
-                Log.i("NetworkGameThread::clientLoop", "Exception");
-                Thread.sleep(300);
+                Log.i("NetworkGameThread", "clientLoop::Exception");
+                Thread.sleep(100);
                 String s = e.getMessage();
             }
         }
@@ -203,7 +212,7 @@ class NetworkGameThread extends Thread  {
         public void accept()throws java.io.IOException
         {
             sChannel = ssChannel.accept();
-            sChannel.socket().setSoTimeout(300);
+            sChannel.socket().setSoTimeout(100);
             oos = null;
             ois = null;
         }
@@ -217,7 +226,7 @@ class NetworkGameThread extends Thread  {
                 Object o = ois.readObject();
                 return (ArrayList<Card>) o;
             }catch (Exception e){
-                Log.e("NetworkGameThread::ServerSocketSerializer", "fail to readCardsToPlay");
+                Log.e("NetworkGameThread", "ServerSocketSerializer::fail to readCardsToPlay");
                 return null;
             }
         }
@@ -241,7 +250,7 @@ class NetworkGameThread extends Thread  {
 
             sChannel = SocketChannel.open();
             sChannel.configureBlocking(true);
-            sChannel.socket().setSoTimeout(300);
+            sChannel.socket().setSoTimeout(200);
         }
 
         public boolean connect( String host) throws java.io.IOException

@@ -25,9 +25,14 @@ public class QueenCardCreater implements CardCreater {
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen7, 5 ) );
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen8, 10 ) );
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen9, 10 ) );
-        cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen10, 15 ) );
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen11, 20 ) );
-        cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen12, 15 ) );
+
+        card = new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen10, 15 );
+        card.setDogCatQueen();
+        cards.add( card );
+        card = new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen12, 15 );
+        card.setDogCatQueen();
+        cards.add( card );
 
         return cards;
     }

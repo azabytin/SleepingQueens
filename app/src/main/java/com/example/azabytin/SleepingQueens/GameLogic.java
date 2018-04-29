@@ -60,16 +60,28 @@ public class GameLogic implements iGame, java.io.Serializable {
 
     public void playCard(Player player, Card card )
     {
-        if(getLastCard()!= null && getLastCard().isKnight() && !card.isDragon()){
-            player.GiveOponentQueen();
+        player.play();
+
+        if(getLastCard()!= null && getLastCard().isKnight() ) {
+            if( card.isDragon()) {
+                player.setPlayAgian();
+            }
+            else{
+                player.GiveOponentQueen();
+            }
         }
 
-        if(getLastCard()!= null && getLastCard().isMagic() && !card.isStick()){
-            player.GetBackQueen(queenCardsStack);
+        if(getLastCard()!= null && getLastCard().isMagic() ){
+            if( card.isStick() ){
+                player.setPlayAgian();
+            }
+            else {
+                player.GetBackQueen(queenCardsStack);
+            }
         }
 
         if( card.isKing()){
-            player.AddQueenCard( queenCardsStack.Get() );
+            player.AddQueenCard( queenCardsStack );
         }
 
         DropPlayerCard( card, player);
@@ -77,10 +89,10 @@ public class GameLogic implements iGame, java.io.Serializable {
 
         if( card.isJocker()){
             if(  player.GetLastAddedCard().isOddNumver() ){
-                player.AddQueenCard( queenCardsStack.Get() );
+                player.AddQueenCard( queenCardsStack );
             }
             if(  player.GetLastAddedCard().isEvenNumver() ){
-                player.GetOpponent().AddQueenCard( queenCardsStack.Get() );
+                player.GetOpponent().AddQueenCard( queenCardsStack );
             }
         }
     }
@@ -126,9 +138,6 @@ public class GameLogic implements iGame, java.io.Serializable {
             playCard( player, card );
         }
 
-        player.setCanUserPlay(false);
-        opponent.setCanUserPlay(true);
-
         return true;
     }
 
@@ -145,9 +154,6 @@ public class GameLogic implements iGame, java.io.Serializable {
         for (Card card: cardsToPlay) {
             playCard( opponent, card );
         }
-
-        player.setCanUserPlay(true);
-        opponent.setCanUserPlay(false);
 
         return true;
     }
@@ -186,9 +192,9 @@ public class GameLogic implements iGame, java.io.Serializable {
 }
     public iGame.Winner whoIsWinner()
     {
-        if( player.hasWinCombination() )
+        if( player.hasWinnigCombination() )
             return Winner.PlayerWinner;
-        else if( opponent.hasWinCombination() )
+        else if( opponent.hasWinnigCombination() )
             return Winner.OpponentWinner;
 
         return Winner.NoWinner;

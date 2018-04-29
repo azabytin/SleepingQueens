@@ -139,7 +139,7 @@ public class GameLogicTests extends Assert {
 
     @Test
     public void testPlayerGetQueenWhenKingPlayed() {
-        mockedGameLogic.fillUserCards(new Card.cardType[]{Card.cardType.king} );
+        mockedGameLogic.fillUserCards(Card.cardType.king );
         boolean res = mockedGameLogic.userPlayCard( Card.cardType.king );
         assertTrue( res );
         assertEquals( 1, mockedGameLogic.getPlayerQueenCards().size() );
@@ -149,10 +149,10 @@ public class GameLogicTests extends Assert {
     public void testSuccessfulAttackWithDragon() {
         mockedGameLogic.fillUserCards( Card.cardType.king );
         mockedGameLogic.fillUserCards( Card.cardType.number );
-        mockedGameLogic.fillOpponentCards( Card.cardType.dragon );
+        mockedGameLogic.fillOpponentCards( Card.cardType.knight );
 
         mockedGameLogic.userPlayCard( Card.cardType.king );
-        mockedGameLogic.opponentPlayCard( Card.cardType.dragon);
+        mockedGameLogic.opponentPlayCard( Card.cardType.knight);
         mockedGameLogic.userPlayCard( Card.cardType.number );
 
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
@@ -161,18 +161,20 @@ public class GameLogicTests extends Assert {
     @Test
     public void testNotSuccessfulAttackWithDragon() {
         mockedGameLogic.fillUserCards( Card.cardType.number );
-        mockedGameLogic.fillUserCards( Card.cardType.dragon);
+        mockedGameLogic.fillUserCards( Card.cardType.knight);
 
         mockedGameLogic.fillOpponentCards( Card.cardType.king);
-        mockedGameLogic.fillOpponentCards( Card.cardType.knight);
+        mockedGameLogic.fillOpponentCards( Card.cardType.dragon);
 
         mockedGameLogic.userPlayCard( Card.cardType.number );
         mockedGameLogic.opponentPlayCard( Card.cardType.king);
-        mockedGameLogic.userPlayCard( Card.cardType.dragon );
+        mockedGameLogic.userPlayCard( Card.cardType.knight );
         mockedGameLogic.oponentPlayCards( new ArrayList<Card>());
 
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
         assertEquals( 1, mockedGameLogic.getOpponentQueenCards().size() );
+        assertTrue(mockedGameLogic.canOponentPlay());
+        assertFalse(mockedGameLogic.canUserPlay());
     }
     @Test
     public void testSuccessfulAttackWithMagic() {
@@ -205,7 +207,36 @@ public class GameLogicTests extends Assert {
 
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
         assertEquals( 1, mockedGameLogic.getOpponentQueenCards().size() );
+        assertTrue(mockedGameLogic.canOponentPlay());
+        assertFalse(mockedGameLogic.canUserPlay());
     }
+    @Test
+    public void test5QueensWinner() {
+        mockedGameLogic.fillUserCards( Card.cardType.king );
+        mockedGameLogic.fillUserCards( Card.cardType.king );
+        mockedGameLogic.fillUserCards( Card.cardType.king );
+        mockedGameLogic.fillUserCards( Card.cardType.king );
+        mockedGameLogic.fillUserCards( Card.cardType.king );
+
+        mockedGameLogic.fillOpponentCards( Card.cardType.number);
+        mockedGameLogic.fillOpponentCards( Card.cardType.number);
+        mockedGameLogic.fillOpponentCards( Card.cardType.number);
+        mockedGameLogic.fillOpponentCards( Card.cardType.number);
+
+        mockedGameLogic.userPlayCard( Card.cardType.king );
+        mockedGameLogic.opponentPlayCard( Card.cardType.number);
+        mockedGameLogic.userPlayCard( Card.cardType.king );
+        mockedGameLogic.opponentPlayCard( Card.cardType.number);
+        mockedGameLogic.userPlayCard( Card.cardType.king );
+        mockedGameLogic.opponentPlayCard( Card.cardType.number);
+        mockedGameLogic.userPlayCard( Card.cardType.king );
+        mockedGameLogic.opponentPlayCard( Card.cardType.number);
+        mockedGameLogic.userPlayCard( Card.cardType.king );
+        mockedGameLogic.opponentPlayCard( Card.cardType.number);
+
+        assertEquals( iGame.Winner.PlayerWinner, mockedGameLogic.whoIsWinner() );
+    }
+
 
 }
 
