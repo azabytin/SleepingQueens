@@ -7,8 +7,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 
 public class GameLogicTests extends Assert {
 
@@ -134,7 +132,17 @@ public class GameLogicTests extends Assert {
         mockedGameLogic.fillOpponentCards(new Card.cardType[]{Card.cardType.king} );
         boolean res = mockedGameLogic.opponentPlayCard( Card.cardType.king);
         assertTrue( res );
-        assertEquals(1,  mockedGameLogic.getOpponentQueenCards().size() );
+
+        int expectedValue = 1;
+        if(mockedGameLogic.getOpponentQueenCards().size() > 1){
+            for( Card card : mockedGameLogic.getOpponentQueenCards()){
+                if( card.isRoseQueen()){
+                    expectedValue = 2;
+                }
+            }
+        }
+
+        assertEquals(expectedValue,  mockedGameLogic.getOpponentQueenCards().size() );
     }
 
     @Test
@@ -142,7 +150,17 @@ public class GameLogicTests extends Assert {
         mockedGameLogic.fillUserCards(Card.cardType.king );
         boolean res = mockedGameLogic.userPlayCard( Card.cardType.king );
         assertTrue( res );
-        assertEquals( 1, mockedGameLogic.getPlayerQueenCards().size() );
+
+        int expectedValue = 1;
+        if(mockedGameLogic.getPlayerQueenCards().size() > 1){
+            for( Card card : mockedGameLogic.getOpponentQueenCards()){
+                if( card.isRoseQueen()){
+                    expectedValue = 2;
+                }
+            }
+        }
+
+        assertEquals( expectedValue, mockedGameLogic.getPlayerQueenCards().size() );
     }
 
     @Test
@@ -153,9 +171,11 @@ public class GameLogicTests extends Assert {
 
         mockedGameLogic.userPlayCard( Card.cardType.king );
         mockedGameLogic.opponentPlayCard( Card.cardType.knight);
+
+        int latestQueensNumber = mockedGameLogic.getPlayerQueenCards().size();
         mockedGameLogic.userPlayCard( Card.cardType.number );
 
-        assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
+        assertEquals( latestQueensNumber-1, mockedGameLogic.getPlayerQueenCards().size() );
         assertEquals( 1, mockedGameLogic.getOpponentQueenCards().size() );
     }
     @Test
@@ -169,10 +189,14 @@ public class GameLogicTests extends Assert {
         mockedGameLogic.userPlayCard( Card.cardType.number );
         mockedGameLogic.opponentPlayCard( Card.cardType.king);
         mockedGameLogic.userPlayCard( Card.cardType.knight );
+
+        int latestQueensNumber = mockedGameLogic.getOpponentQueenCards().size();
+
         mockedGameLogic.oponentPlayCards( new ArrayList<Card>());
 
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
-        assertEquals( 1, mockedGameLogic.getOpponentQueenCards().size() );
+        assertEquals( latestQueensNumber, mockedGameLogic.getOpponentQueenCards().size() );
+
         assertTrue(mockedGameLogic.canOponentPlay());
         assertFalse(mockedGameLogic.canUserPlay());
     }
@@ -187,10 +211,12 @@ public class GameLogicTests extends Assert {
         mockedGameLogic.userPlayCard( Card.cardType.number );
         mockedGameLogic.opponentPlayCard( Card.cardType.king);
         mockedGameLogic.userPlayCard( Card.cardType.magic );
+
+        int latestQueensNumber = mockedGameLogic.getOpponentQueenCards().size();
         mockedGameLogic.oponentPlayCards( new ArrayList<Card>());
 
+        assertEquals( latestQueensNumber-1, mockedGameLogic.getOpponentQueenCards().size() );
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
-        assertEquals( 0, mockedGameLogic.getOpponentQueenCards().size() );
     }
     @Test
     public void testNotSuccessfulAttackWithMagic() {
@@ -212,6 +238,7 @@ public class GameLogicTests extends Assert {
     }
     @Test
     public void test5QueensWinner() {
+        mockedGameLogic.fillUserCards( Card.cardType.king );
         mockedGameLogic.fillUserCards( Card.cardType.king );
         mockedGameLogic.fillUserCards( Card.cardType.king );
         mockedGameLogic.fillUserCards( Card.cardType.king );
