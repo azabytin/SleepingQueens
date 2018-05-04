@@ -12,7 +12,7 @@ public class GameLogicTests extends Assert {
 
     class GameLogicMocked extends GameLogic
     {
-        private boolean gameLogicCardsRefillPolicy = false;
+        private boolean gameLogicCardsRefillPolicy;
         GameLogicMocked(){
             gameLogicCardsRefillPolicy = false;
         }
@@ -229,10 +229,13 @@ public class GameLogicTests extends Assert {
         mockedGameLogic.userPlayCard( Card.cardType.number );
         mockedGameLogic.opponentPlayCard( Card.cardType.king);
         mockedGameLogic.userPlayCard( Card.cardType.magic );
+
+        int latestQueensNumber = mockedGameLogic.getOpponentQueenCards().size();
+
         mockedGameLogic.oponentPlayCards( new ArrayList<Card>());
 
         assertEquals( 0, mockedGameLogic.getPlayerQueenCards().size() );
-        assertEquals( 1, mockedGameLogic.getOpponentQueenCards().size() );
+        assertEquals( latestQueensNumber, mockedGameLogic.getOpponentQueenCards().size() );
         assertTrue(mockedGameLogic.canOponentPlay());
         assertFalse(mockedGameLogic.canUserPlay());
     }

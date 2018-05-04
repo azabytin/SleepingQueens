@@ -6,7 +6,7 @@ package com.example.azabytin.SleepingQueens;
 
 public class Card implements java.io.Serializable{
 
-    public enum cardType{number, king, queen, stick, magic, knight, dragon, jocker};
+    public enum cardType{number, king, queen, stick, magic, knight, dragon, jocker}
 
     public Card( cardType t, int r )
     {
@@ -45,26 +45,26 @@ public class Card implements java.io.Serializable{
     public void setDogCatQueen(){dogCatQueen = true;}
     public boolean isDogCatQueen(){return dogCatQueen;}
 
-    public boolean isKnight( ){return type == cardType.knight; };
-    public boolean isStick( ){return type == cardType.stick; };
-    public boolean isMagic( ){return type == cardType.magic; };
-    public boolean isDragon( ){return type == cardType.dragon; };
-    public boolean isKing( ){return type == cardType.king; };
-    public boolean isNumver( ){return type == cardType.number; };
+    public boolean isKnight( ){return type == cardType.knight; }
+    public boolean isStick( ){return type == cardType.stick; }
+    public boolean isMagic( ){return type == cardType.magic; }
+    public boolean isDragon( ){return type == cardType.dragon; }
+    public boolean isKing( ){return type == cardType.king; }
+    public boolean isNumver( ){return type == cardType.number; }
     public boolean isOddNumver( ){
         if(  type == cardType.number ){
             return value % 2 != 0;
         }
         return false;
-    };
+    }
     public boolean isEvenNumver( ){
         if(  type == cardType.number ){
             return value % 2 == 0;
         }
         return false;
-    };
+    }
 
-    public boolean isJocker( ){return type == cardType.jocker; };
+    public boolean isJocker( ){return type == cardType.jocker; }
 
     public cardType getType() {
 

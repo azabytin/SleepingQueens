@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(com.example.azabytin.SleepingQueens.R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
+        Toolbar toolbar = findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
         timerHandler.postDelayed(timerRunnable, 0);
     }
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void showWinMessage( String message)
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("Игра окончена");
         builder.setMessage(message);
         builder.setCancelable(false);
@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 onStartNewGame();
             }
 
-            ;
+
         });
         builder.show();
     }
@@ -351,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Отзыв");
         startActivity(Intent.createChooser(feedbackEmail, "Отправить отзыв ( Нужно выбрать Gmail ):"));
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("Отправка отзыва");
         builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setMessage("Для отправки отзыва нужно выбрать Gmail");
@@ -360,7 +360,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
 
             }
-            ;
         });
 
         //builder.show();

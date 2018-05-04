@@ -15,16 +15,16 @@ public interface iGame {
         NoWinner
     }
 
-    public void startNewGame();
-    public List<Card> getPlayerQueenCards();
-    public List<Card> getOpponentQueenCards();
-    public List<Card> getPlayerCards();
-    public List<Card> getOpponentCards();
-    public Card getLastCard();
-    public Card getBeforeLastCard();
-    public Winner whoIsWinner();
-    public boolean userPlayCards(ArrayList<Card> cardsToPlay);
-    public boolean oponentPlayCards(ArrayList<Card> cardsToPlay);
-    public boolean canOponentPlay();
-    public boolean canUserPlay();
+    void startNewGame();
+    List<Card> getPlayerQueenCards();
+    List<Card> getOpponentQueenCards();
+    List<Card> getPlayerCards();
+    List<Card> getOpponentCards();
+    Card getLastCard();
+    Card getBeforeLastCard();
+    Winner whoIsWinner();
+    boolean userPlayCards(ArrayList<Card> cardsToPlay);
+    boolean oponentPlayCards(ArrayList<Card> cardsToPlay);
+    boolean canOponentPlay();
+    boolean canUserPlay();
 }

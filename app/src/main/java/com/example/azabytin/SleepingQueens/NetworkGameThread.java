@@ -74,7 +74,7 @@ class NetworkGameThread extends Thread  {
             udpSocketForNegotiation.setSoTimeout(200);
 
             NegotiationPkt broadcastRequestPkt = new NegotiationPkt( true );
-            NegotiationPkt responsePkt = new NegotiationPkt( false);;
+            NegotiationPkt responsePkt = new NegotiationPkt( false);
 
             boolean waitingResponse = true;
             Log.i("NetworkGameThread", "Wainting for response " + getId());
@@ -241,7 +241,7 @@ class NetworkGameThread extends Thread  {
 
     private class ClientSocketSerializer
     {
-        private SocketChannel sChannel = null;
+        private SocketChannel sChannel;
         private ObjectOutputStream  oos = null;
         private ObjectInputStream ois = null;
 
@@ -255,8 +255,7 @@ class NetworkGameThread extends Thread  {
 
         public boolean connect( String host) throws java.io.IOException
         {
-            boolean res = sChannel.connect(new InetSocketAddress(host, 50000));
-            return res;
+            return sChannel.connect(new InetSocketAddress(host, 50000));
         }
 
         public void writeCardsToPlay() throws java.io.IOException, java.lang.ClassNotFoundException
@@ -277,8 +276,7 @@ class NetworkGameThread extends Thread  {
             if(ois == null)
                 ois = new ObjectInputStream(sChannel.socket().getInputStream());
 
-            GameLogic o = (GameLogic)ois.readObject();
-            return o;
+            return (GameLogic)ois.readObject();
         }
     }
 }

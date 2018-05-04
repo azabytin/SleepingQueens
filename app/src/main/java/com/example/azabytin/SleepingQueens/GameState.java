@@ -78,8 +78,7 @@ public class GameState implements iGame {
     }
     public boolean userPlayCards(ArrayList<Card> _cardsToPlay){
 
-        ArrayList<Card> tmp = new ArrayList<Card>();
-        tmp.addAll(_cardsToPlay);
+        ArrayList<Card> tmp = new ArrayList<Card>(_cardsToPlay);
 
         threadHandler.post( executorThread.new executePlayCards(tmp) );
 

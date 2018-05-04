@@ -16,7 +16,7 @@ public class NetUtils {
      */
     public static String bytesToHex(byte[] bytes) {
         StringBuilder sbuf = new StringBuilder();
-        for(int idx=0; idx < bytes.length; idx++) {
+        for(int idx : bytes) {
             int intVal = bytes[idx] & 0xff;
             if (intVal < 0x10) sbuf.append("0");
             sbuf.append(Integer.toHexString(intVal).toUpperCase());
@@ -77,7 +77,7 @@ public class NetUtils {
                 byte[] mac = intf.getHardwareAddress();
                 if (mac==null) return "";
                 StringBuilder buf = new StringBuilder();
-                for (int idx=0; idx<mac.length; idx++)
+                for (int idx : mac)
                     buf.append(String.format("%02X:", mac[idx]));
                 if (buf.length()>0) buf.deleteCharAt(buf.length()-1);
                 return buf.toString();

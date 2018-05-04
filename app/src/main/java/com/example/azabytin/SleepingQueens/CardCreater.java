@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface CardCreater
 {
-    public List<Card> createPlayCards();
+    List<Card> createPlayCards();
 }
