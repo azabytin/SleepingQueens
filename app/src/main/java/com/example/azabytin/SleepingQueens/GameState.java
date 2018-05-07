@@ -1,12 +1,10 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by azabytin on 04.04.2018.
@@ -33,7 +31,7 @@ public class GameState implements iGame {
         threadHandler = _threadHandler;
     }
 
-    public void Init( iGame _serverLogic){
+    public void InitFromGameLogic(iGame _serverLogic){
         HumanCards = _serverLogic.getOpponentCards();
             ComputerQueenCards = _serverLogic.getPlayerQueenCards();
             HumanQueenCards = _serverLogic.getOpponentQueenCards();

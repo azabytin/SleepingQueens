@@ -34,8 +34,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         public void run(){
-            gameLogic.oponentPlayCards(playCards);
-            UpdateCardsView();
+            if( gameLogic.canOponentPlay() ) {
+                gameLogic.oponentPlayCards(playCards);
+                UpdateCardsView();
+            }
         }
 
     }
@@ -60,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public class executeUpdateClientGameLogic implements Runnable{
+    public class executeUpdateClientGameState implements Runnable{
 
         private iGame game;
-        executeUpdateClientGameLogic(iGame _game){
+        executeUpdateClientGameState(iGame _game){
             game = _game;
         }
 
