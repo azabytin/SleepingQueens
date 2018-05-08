@@ -92,20 +92,19 @@ public class NetUtils {
         }*/
     }
 
-    public static String getNetworkBroadcastAddress() {
-        String addr = getIPAddress( true );
+    public static InetAddress getBroadcastAddr() throws java.net.UnknownHostException{
+        String addr = getIPAddress( );
         int i = addr.lastIndexOf('.');
         String broadcast = addr.substring(0, i);
         broadcast = broadcast + ".255";
-        return broadcast;
+        return  InetAddress.getByName( broadcast );
     }
 
-    /**
-     * Get IP address from first non-localhost interface
-     * @param ipv4  true=return ipv4, false=return ipv6
-     * @return  address or empty string
-     */
-    public static String getIPAddress(boolean useIPv4) {
+    public static String getIPAddress() {
+        return getIPAddressV4V6( true );
+    }
+
+    public static String getIPAddressV4V6(boolean useIPv4) {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface intf : interfaces) {

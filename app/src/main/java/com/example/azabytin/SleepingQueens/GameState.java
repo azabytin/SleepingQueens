@@ -1,5 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
@@ -22,13 +23,11 @@ public class GameState implements iGame {
     boolean canUserPlay;
     iGame serverLogic;
 
-    Handler threadHandler;
-    NetworkGameThread executorThread;
+    String serverHost;
 
-    public GameState(NetworkGameThread _executorThread, Handler _threadHandler)
+    public GameState( String _serverHost)
     {
-        executorThread = _executorThread;
-        threadHandler = _threadHandler;
+        serverHost = _serverHost;
     }
 
     public void InitFromGameLogic(iGame _serverLogic){
@@ -74,11 +73,17 @@ public class GameState implements iGame {
 
         return whoWinner;
     }
-    public boolean userPlayCards(ArrayList<Card> _cardsToPlay){
+    public boolean userPlayCards(ArrayList<Card> cardsToPlay){
 
-        ArrayList<Card> tmp = new ArrayList<Card>(_cardsToPlay);
-
-        threadHandler.post( executorThread.new executePlayCards(tmp) );
+        new AsyncTask<Void, Boolean, Boolean>() {
+            @Override
+            protected Boolean doInBackground(final Void... params) {
+                try {
+                    new ClientSocketSerializer(serverHost).writeCardsToPlay(cardsToPlay);
+                }catch (Exception e){}
+                return true;
+            }
+        }.execute();
 
         Log.i("ClientGameLogic", "Send cards to play");
         return true;
