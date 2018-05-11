@@ -17,6 +17,10 @@ public class GameLogic implements iGame, java.io.Serializable {
 
     protected ArrayList<Card> playedCards = new ArrayList<>();
 
+    public GameLogic(){
+        startNewGame();
+    }
+
     public void startNewGame()
     {
         queenCardsStack = new PlayCardsStack( new QueenCardCreater());
@@ -142,6 +146,11 @@ public class GameLogic implements iGame, java.io.Serializable {
     }
 
     public boolean oponentPlayCards(ArrayList<Card> cardsToPlay){
+
+        if( cardsToPlay == null || !canOponentPlay()){
+            return false;
+        }
+
 
         if( cardsToPlay.size() == 0){
             AiOponent ai = new AiOponent(opponent, player);

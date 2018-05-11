@@ -26,66 +26,106 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean needUpdate = true;
     protected ProgressDialog networkConnectProgressDialog = null;
 
-    public class executePlayCards implements Runnable{
 
-        private ArrayList<Card> playCards;
-        executePlayCards(ArrayList<Card> _playCards){
-            playCards = _playCards;
-        }
-
-        public void run(){
-            if( gameLogic.canOponentPlay() ) {
-                gameLogic.oponentPlayCards(playCards);
-                UpdateCardsView();
+    public class ClientServerNegotiatorThread extends Thread {
+        @Override
+        public void run() {
+            ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
+            try {
+                while( !Thread.interrupted() && clientServerNegotiator.getPeersNumber() > 1 ){
+                    Thread.sleep(10);
+                }
+            } catch (Exception ex){
             }
+            runOnUiThread( ()-> onNetworkPeerFound( clientServerNegotiator )) ;
         }
-
-    }
-    public class executeInitServerGameLogic implements Runnable{
-
-        private GameLogic game;
-        executeInitServerGameLogic(GameLogic _game){
-            game = _game;
-        }
-
-        public void run(){
-            if( game != null) {
-                gameLogic = game;
-                gameLogic.startNewGame();
-                UpdateCardsView();
-            }
-            if( networkConnectProgressDialog != null ){
-                networkConnectProgressDialog.dismiss();
-                networkConnectProgressDialog = null;
-            }
-        }
-
     }
 
-    public class executeUpdateClientGameState implements Runnable{
+    class NetworkGameThread extends Thread {
 
-        private iGame game;
-        executeUpdateClientGameState(iGame _game){
-            game = _game;
+        private Integer loopCount = Integer.MAX_VALUE;
+
+        public void stopThread() {
+            synchronized (loopCount) {
+                loopCount = 1;
+            }
         }
 
-        public void run(){
-            if( networkGameThread == null ) {
+        protected boolean isRunning() {
+            synchronized (loopCount) {
+                loopCount--;
+                return loopCount > 0;
+            }
+        }
+
+        private GameLogic serverThreadGameLogic;
+        NetworkGameThread(GameLogic gameLogic){
+            serverThreadGameLogic = gameLogic;
+        }
+        @Override
+        public void run() {
+
+            ServerSocketSerializer serverSerializer = null;
+            try {
+                serverSerializer = new ServerSocketSerializer();
+            }catch (Exception e){
                 return;
             }
 
-            gameLogic = game;
+            while (isRunning()) {
+                try {
+
+                    serverSerializer.accept();
+                    serverSerializer.writeGameLogic(serverThreadGameLogic);
+
+                    ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
+                    runOnUiThread( ()-> {
+                        if(gameLogic.oponentPlayCards(cardsToPlay)) {
+                            UpdateCardsView();
+                        }
+                    }) ;
+
+                } catch (Exception e) {
+                    //Log.e("NetworkGameThread", "serverLoop::Exception");
+                }
+            }
+            serverSerializer.close();
+        }
+    }
+
+    private void onNetworkPeerFound(ClientServerNegotiator clientServerNegotiator){
+
+        gameLogic = new GameLogic();
+
+        if( networkConnectProgressDialog != null ){
+            networkConnectProgressDialog.dismiss();
+            networkConnectProgressDialog = null;
+        }
+
+        if( clientServerNegotiator.getGameType() == ClientServerNegotiator.GameType.ServerGame ){
+            networkGameThread = new NetworkGameThread( new GameLogic() );
+            networkGameThread.run();
+        }
+
+        gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
+
+        timerHandler.postDelayed(executeUpdateClientGameState, 1000);
+        UpdateCardsView();
+    }
+
+    protected Runnable executeUpdateClientGameState = new Runnable()  {
+
+        @Override
+        public void run(){
+
+            GameState gameState = (GameState) gameLogic;
+            gameState.Update();
             if(needUpdate || gameLogic.canUserPlay()){
                 UpdateCardsView();
             }
-
-            if( networkConnectProgressDialog != null ){
-                networkConnectProgressDialog.dismiss();
-                networkConnectProgressDialog = null;
-            }
+            timerHandler.postDelayed(this, 1000);
         }
-    }
-    protected Handler udpHandler = new Handler();
+    };
 
     protected Handler timerHandler = new Handler();
     protected Runnable timerRunnable = new Runnable()  {
@@ -97,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    protected Runnable timerRunnableOponentPlay = new Runnable()  {
+    protected Runnable timerOponentPlay = new Runnable()  {
 
         @Override
         public void run() {
@@ -155,9 +195,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     protected  void OnStartTwoPlayerGame()
     {
-        networkGameThread = new NetworkGameThread(this,udpHandler, new GameLogic());
-        Thread thread = new Thread(networkGameThread);
-        thread.start();
+        new ClientServerNegotiatorThread().run();
         UpdateCardsView();
 
         networkConnectProgressDialog = new ProgressDialog(this);
@@ -182,8 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected  void OnStartOnePlayerGame()
     {
         gameLogic = new GameLogic();
-        gameLogic.startNewGame();
-        timerHandler.postDelayed(timerRunnableOponentPlay, 0);
+        timerHandler.postDelayed(timerOponentPlay, 0);
         UpdateCardsView();
     }
 

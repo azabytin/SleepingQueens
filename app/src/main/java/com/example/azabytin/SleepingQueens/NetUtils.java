@@ -2,9 +2,16 @@ package com.example.azabytin.SleepingQueens; /**
  * Created by azabytin on 14.03.2018.
  */
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 //import org.apache.http.conn.util.InetAddressUtils;
 
 public class NetUtils {
@@ -93,14 +100,14 @@ public class NetUtils {
     }
 
     public static InetAddress getBroadcastAddr() throws java.net.UnknownHostException{
-        String addr = getIPAddress( );
+        String addr = getMyIPAddress( );
         int i = addr.lastIndexOf('.');
         String broadcast = addr.substring(0, i);
         broadcast = broadcast + ".255";
         return  InetAddress.getByName( broadcast );
     }
 
-    public static String getIPAddress() {
+    public static String getMyIPAddress() {
         return getIPAddressV4V6( true );
     }
 

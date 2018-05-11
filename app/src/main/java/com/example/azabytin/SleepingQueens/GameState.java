@@ -1,7 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class GameState implements iGame {
         serverHost = _serverHost;
     }
 
-    public void InitFromGameLogic(iGame _serverLogic){
+    private void InitFromGameLogic(iGame _serverLogic){
         HumanCards = _serverLogic.getOpponentCards();
             ComputerQueenCards = _serverLogic.getPlayerQueenCards();
             HumanQueenCards = _serverLogic.getOpponentQueenCards();
@@ -89,6 +88,27 @@ public class GameState implements iGame {
         return true;
     }
 
+    public void Update(){
+
+        new AsyncTask<Void, Boolean, GameLogic>() {
+            @Override
+            protected GameLogic doInBackground(final Void... params) {
+                try {
+                    return new ClientSocketSerializer(serverHost).readGameLogic();
+                }catch (Exception e){}
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute( final GameLogic result ) {
+                if( result != null ) {
+                    InitFromGameLogic( result );
+                }
+            }
+
+        }.execute();
+
+    }
     public boolean oponentPlayCards(ArrayList<Card> cardsToPlay){
         return false;
     }
