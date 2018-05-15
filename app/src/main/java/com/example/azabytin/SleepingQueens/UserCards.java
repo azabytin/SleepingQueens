@@ -8,18 +8,6 @@ import java.util.ArrayList;
 
 public class UserCards extends ArrayList<Card> implements java.io.Serializable{
 
-    public boolean hasThisNumber( Card card){
-
-        if( !card.isNumver())
-            return false;
-
-        for (Card card2 : this){
-            if( card.isNumver() && ( card2.getValue() == card.getValue() )  )
-                return true;
-        }
-    return false;
-    }
-
     public Card GetKnight()
     {
         for (Card card : this){

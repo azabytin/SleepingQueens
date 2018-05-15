@@ -6,7 +6,7 @@ import java.util.List;
  * Created by azabytin on 06.03.2018.
  */
 
-public interface CardCreater
+interface CardCreater
 {
     List<Card> createPlayCards();
 }

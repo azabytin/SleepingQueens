@@ -25,19 +25,16 @@ public class Card implements java.io.Serializable{
       value = v;
     }
 
-    protected int resourceId;
-    public int getResourceId() {
-        return resourceId;
-    }
+    final int resourceId;
 
-    protected int value;
+    private final int value;
     public int getValue() {
         return value;
     }
 
-    protected cardType type;
-    protected boolean roseQueen = false;
-    protected boolean dogCatQueen = false;
+    private final cardType type;
+    private boolean roseQueen = false;
+    private boolean dogCatQueen = false;
 
     public void setRoseQueen(){roseQueen = true;}
     public boolean isRoseQueen(){return roseQueen;}
@@ -52,16 +49,10 @@ public class Card implements java.io.Serializable{
     public boolean isKing( ){return type == cardType.king; }
     public boolean isNumver( ){return type == cardType.number; }
     public boolean isOddNumver( ){
-        if(  type == cardType.number ){
-            return value % 2 != 0;
-        }
-        return false;
+        return type == cardType.number && value % 2 != 0;
     }
-    public boolean isEvenNumver( ){
-        if(  type == cardType.number ){
-            return value % 2 == 0;
-        }
-        return false;
+    public boolean isEvenNumver( ) {
+        return type == cardType.number && value % 2 == 0;
     }
 
     public boolean isJocker( ){return type == cardType.jocker; }

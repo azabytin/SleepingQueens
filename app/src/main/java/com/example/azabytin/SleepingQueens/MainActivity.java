@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,26 +15,27 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    protected iGame gameLogic;
-    protected Hashtable< Integer, Card> cardButtonToCardHash;
-    protected ArrayList<Card> selectedCardsToPlay;
-    NetworkGameThread networkGameThread = null;
-    boolean needUpdate = true;
-    protected ProgressDialog networkConnectProgressDialog = null;
+    private iGame gameLogic;
+    private Hashtable< Integer, Card> cardButtonToCardHash;
+    private ArrayList<Card> selectedCardsToPlay;
+    private NetworkGameThread networkGameThread = null;
+    private boolean needUpdate = true;
+    private ProgressDialog networkConnectProgressDialog = null;
 
 
-    public class ClientServerNegotiatorThread extends Thread {
+    class ClientServerNegotiatorThread extends Thread {
         @Override
         public void run() {
             ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
             try {
-                while( !Thread.interrupted() && clientServerNegotiator.getPeersNumber() > 1 ){
+                while( !Thread.interrupted() && clientServerNegotiator.WaitForNewPeer() > 1 ){
                     Thread.sleep(10);
                 }
-            } catch (Exception ex){
+            } catch (Exception ignored){
             }
             runOnUiThread( ()-> onNetworkPeerFound( clientServerNegotiator )) ;
         }
@@ -43,29 +43,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     class NetworkGameThread extends Thread {
 
-        private Integer loopCount = Integer.MAX_VALUE;
+        private final AtomicInteger loopCount = new AtomicInteger(Integer.MAX_VALUE);
+        private final GameLogic serverThreadGameLogic;
 
-        public void stopThread() {
-            synchronized (loopCount) {
-                loopCount = 1;
-            }
+        void stopThread() {
+            loopCount.set(1);
         }
 
-        protected boolean isRunning() {
-            synchronized (loopCount) {
-                loopCount--;
-                return loopCount > 0;
-            }
-        }
-
-        private GameLogic serverThreadGameLogic;
         NetworkGameThread(GameLogic gameLogic){
             serverThreadGameLogic = gameLogic;
         }
         @Override
         public void run() {
 
-            ServerSocketSerializer serverSerializer = null;
+            ServerSocketSerializer serverSerializer;
             try {
                 serverSerializer = new ServerSocketSerializer();
             }catch (Exception e){
@@ -91,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             serverSerializer.close();
         }
+        private boolean isRunning() {
+            return loopCount.decrementAndGet() > 0;
+        }
     }
 
     private void onNetworkPeerFound(ClientServerNegotiator clientServerNegotiator){
@@ -113,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         UpdateCardsView();
     }
 
-    protected Runnable executeUpdateClientGameState = new Runnable()  {
+    private final Runnable executeUpdateClientGameState = new Runnable()  {
 
         @Override
         public void run(){
@@ -127,8 +121,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    protected Handler timerHandler = new Handler();
-    protected Runnable timerRunnable = new Runnable()  {
+    private final Handler timerHandler = new Handler();
+    private final Runnable timerRunnable = new Runnable()  {
 
         @Override
         public void run() {
@@ -137,45 +131,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    protected Runnable timerOponentPlay = new Runnable()  {
+    private final Runnable timerOponentPlay = new Runnable()  {
 
         @Override
         public void run() {
             if( gameLogic != null && gameLogic.canOponentPlay() ){
-                gameLogic.oponentPlayCards( new ArrayList<Card>());
+                gameLogic.oponentPlayCards( new ArrayList<>());
                 UpdateCardsView();
             }
             timerHandler.postDelayed(this, 2000);
         }
     };
 
-    protected void setUsedCardButton( int resourceId)
+    private void setUsedCardButton(int resourceId)
     {
         android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
         button.setImageResource( resourceId );
     }
 
-    protected void setBeforeUsedCardButton( int resourceId)
+    private void setBeforeUsedCardButton(int resourceId)
     {
         android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
         button.setImageResource( resourceId );
     }
 
-    protected void CleanUp()
+    private void CleanUp()
     {
         gameLogic = null;
-        cardButtonToCardHash = new Hashtable<Integer, Card>();
-        selectedCardsToPlay = new ArrayList<Card>();
+        cardButtonToCardHash = new Hashtable<>();
+        selectedCardsToPlay = new ArrayList<>();
 
         if( networkGameThread != null ){
             networkGameThread.stopThread();
             try{
                 networkGameThread.join();
                 networkGameThread = null;
-            }catch (Exception e){}
+            }catch (Exception ignored){}
         }
     }
-    protected void onStartNewGame()
+
+    private void onStartNewGame()
     {
         CleanUp();
         CharSequence[] items = {"Играть с Андроидом", "Играть по сети вдвоем"};
@@ -193,7 +188,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog alert = builder.create();
         alert.show();
     }
-    protected  void OnStartTwoPlayerGame()
+
+    private  void OnStartTwoPlayerGame()
     {
         new ClientServerNegotiatorThread().run();
         UpdateCardsView();
@@ -203,21 +199,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         networkConnectProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         networkConnectProgressDialog.setIndeterminate(true);
         networkConnectProgressDialog.setCancelable(false);
-        Message msg = new Message();
 
-        networkConnectProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                CleanUp();
-                onStartNewGame();
-            }
+        networkConnectProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", (dialog, which)-> {
+            dialog.dismiss();
+            CleanUp();
+            onStartNewGame();
         });
 
         networkConnectProgressDialog.show();
 
     }
-    protected  void OnStartOnePlayerGame()
+    private  void OnStartOnePlayerGame()
     {
         gameLogic = new GameLogic();
         timerHandler.postDelayed(timerOponentPlay, 0);
@@ -233,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timerHandler.postDelayed(timerRunnable, 0);
     }
 
-    protected void setButtonsImages( List<Card> cards, int firstButton )
+    private void setButtonsImages(List<Card> cards, int firstButton)
     {
        android.widget.ImageButton button;
         int i;
@@ -248,23 +240,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void showWinMessage( String message)
+    private void showWinMessage(String message)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("Игра окончена");
         builder.setMessage(message);
         builder.setCancelable(false);
-        builder.setPositiveButton( "Новая игра", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                onStartNewGame();
-            }
-
-
-        });
+        builder.setPositiveButton( "Новая игра", (dialog, which)-> onStartNewGame() );
         builder.show();
     }
 
-    public void onClickPlay( View v) {
+    public void onClickPlay() {
 
         new AsyncTask<Void, Boolean, Boolean>() {
             @Override
@@ -294,11 +280,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 selectedCardsToPlay.add(card);
             }
         }
-        catch(Exception e)
+        catch(Exception ignored)
             {}
     }
 
-    protected void UpdateCheckedCardsView()
+    private void UpdateCheckedCardsView()
     {
         Button playButton = findViewById(R.id.playButton);
         if (gameLogic != null && gameLogic.canUserPlay()) {
@@ -325,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    protected void SetPlayerCardsImages(){
+    private void SetPlayerCardsImages(){
 
         int i = 0;
         cardButtonToCardHash.clear();
@@ -335,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void UpdateCardsView() {
+    private void UpdateCardsView() {
           try{
 
               setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
@@ -363,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 CleanUp();
                 showWinMessage("Вы проиграли!");
             }
-        }catch(Exception e){}
+        }catch(Exception ignored){}
 
     }
 
@@ -380,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onResume(){
         super.onResume();
         onStartNewGame();
-    }
+        }
 
     public void onSendfeedbackButton(View v)
     {
@@ -400,8 +386,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-
-        //builder.show();
+        builder.show();
     }
 }
 

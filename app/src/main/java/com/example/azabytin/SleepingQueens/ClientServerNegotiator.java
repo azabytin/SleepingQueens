@@ -17,7 +17,7 @@ public class ClientServerNegotiator {
         ClientGame
     }
 
-    private ArrayList<String> allPeersAddresses = new ArrayList();
+    private final ArrayList<String> allPeersAddresses = new ArrayList();
 
     private DatagramSocket udpSocketForNegotiation;
     private DatagramPacket broadcastPkt;
@@ -59,8 +59,6 @@ public class ClientServerNegotiator {
             if (isPktFromNewPeer(broadcastPkFromPeer)) {
                 hasNewPeer = true;
                 udpSocketForNegotiation.send(broadcastPkt);
-            } else {
-                continue;
             }
         }
 
@@ -75,7 +73,7 @@ public class ClientServerNegotiator {
         Collections.sort(allPeersAddresses);
     }
 
-    public boolean isPktFromNewPeer(DatagramPacket pkt){
+    private boolean isPktFromNewPeer(DatagramPacket pkt){
 
         String peerAddr = pkt.getAddress().getHostName();
         return !allPeersAddresses.contains(peerAddr );

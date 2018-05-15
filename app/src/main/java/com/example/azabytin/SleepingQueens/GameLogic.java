@@ -9,13 +9,13 @@ import java.util.List;
 
 public class GameLogic implements iGame, java.io.Serializable {
 
-    protected PlayCardsStack playCardsStack;
-    protected PlayCardsStack queenCardsStack;
+    private PlayCardsStack playCardsStack;
+    private PlayCardsStack queenCardsStack;
 
     protected Player player;
     protected Player opponent;
 
-    protected ArrayList<Card> playedCards = new ArrayList<>();
+    private final ArrayList<Card> playedCards = new ArrayList<>();
 
     public GameLogic(){
         startNewGame();
@@ -40,29 +40,19 @@ public class GameLogic implements iGame, java.io.Serializable {
         refillCardsFromStack(opponent);
     }
 
-    protected void refillCardsFromStack(Player player){
+    private void refillCardsFromStack(Player player){
         if(player.CardsNumber()  < 5){
             player.AddCard(playCardsStack.Get());
             refillCardsFromStack( player );
         }
     }
 
-    protected void DropPlayerCard(Card card, Player player){
+    private void DropPlayerCard(Card card, Player player){
         playedCards.add(0, card);
         player.RemovecCard( card );
     }
 
-    protected void OnGetBackQueen( Player player){
-
-        player.GetBackQueen( queenCardsStack );
-    }
-
-    protected void OnGiveOponentQueen( Player player){
-
-        player.GiveOponentQueen();
-    }
-
-    public void playCard(Player player, Card card )
+    private void playCard(Player player, Card card)
     {
         player.play();
 
@@ -101,7 +91,7 @@ public class GameLogic implements iGame, java.io.Serializable {
         }
     }
 
-    protected boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
+    private boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
     {
         if( !player.canUserPlay ){
             return false;

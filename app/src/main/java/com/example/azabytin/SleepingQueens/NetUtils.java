@@ -1,4 +1,5 @@
-package com.example.azabytin.SleepingQueens; /**
+package com.example.azabytin.SleepingQueens;
+/**
  * Created by azabytin on 14.03.2018.
  */
 
@@ -6,21 +7,12 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-//import org.apache.http.conn.util.InetAddressUtils;
 
-public class NetUtils {
+class NetUtils {
 
-    /**
-     * Convert byte array to hex string
-     * @param bytes
-     * @return
-     */
     public static String bytesToHex(byte[] bytes) {
         StringBuilder sbuf = new StringBuilder();
         for(int idx : bytes) {
@@ -31,21 +23,10 @@ public class NetUtils {
         return sbuf.toString();
     }
 
-    /**
-     * Get utf8 byte array.
-     * @param str
-     * @return  array of NULL if error was found
-     */
     public static byte[] getUTF8Bytes(String str) {
         try { return str.getBytes("UTF-8"); } catch (Exception ex) { return null; }
     }
 
-    /**
-     * Load UTF8withBOM or any ansi text file.
-     * @param filename
-     * @return
-     * @throws java.io.IOException
-     */
     public static String loadFileAsString(String filename) throws java.io.IOException {
         final int BUFLEN=1024;
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(filename), BUFLEN);
@@ -65,15 +46,10 @@ public class NetUtils {
             }
             return isUTF8 ? new String(baos.toByteArray(), "UTF-8") : new String(baos.toByteArray());
         } finally {
-            try{ is.close(); } catch(Exception ex){}
+            try{ is.close(); } catch(Exception ignored){}
         }
     }
 
-    /**
-     * Returns MAC address of the given interface name.
-     * @param interfaceName eth0, wlan0 or NULL=use first interface
-     * @return  mac address or empty string
-     */
     public static String getMACAddress(String interfaceName) {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
@@ -89,14 +65,8 @@ public class NetUtils {
                 if (buf.length()>0) buf.deleteCharAt(buf.length()-1);
                 return buf.toString();
             }
-        } catch (Exception ex) { } // for now eat exceptions
+        } catch (Exception ignored) { }
         return "";
-        /*try {
-            // this is so Linux hack
-            return loadFileAsString("/sys/class/net/" +interfaceName + "/address").toUpperCase().trim();
-        } catch (IOException ex) {
-            return null;
-        }*/
     }
 
     public static InetAddress getBroadcastAddr() throws java.net.UnknownHostException{
@@ -111,7 +81,7 @@ public class NetUtils {
         return getIPAddressV4V6( true );
     }
 
-    public static String getIPAddressV4V6(boolean useIPv4) {
+    private static String getIPAddressV4V6(boolean useIPv4) {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface intf : interfaces) {
@@ -134,19 +104,7 @@ public class NetUtils {
                     }
                 }
             }
-        } catch (Exception ex) { } // for now eat exceptions
+        } catch (Exception ignored) { } // for now eat exceptions
         return "";
-    }
-    public static InetAddress getBroadcast() throws SocketException {
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();) {
-            NetworkInterface ni = niEnum.nextElement();
-            if (!ni.isLoopback()) {
-                for (InterfaceAddress interfaceAddress : ni.getInterfaceAddresses()) {
-                    return interfaceAddress.getBroadcast();
-                }
-            }
-        }
-        return null;
     }
 }

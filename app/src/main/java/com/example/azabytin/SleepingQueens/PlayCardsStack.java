@@ -7,10 +7,10 @@ import java.util.List;
  * Created by azabytin on 06.03.2018.
  */
 
-public class PlayCardsStack  implements java.io.Serializable{
+class PlayCardsStack  implements java.io.Serializable{
 
-    protected List<Card> cards;
-    protected transient CardCreater cardCreater;
+    private List<Card> cards;
+    private final transient CardCreater cardCreater;
 
     public PlayCardsStack( CardCreater с ){
         cardCreater = с;

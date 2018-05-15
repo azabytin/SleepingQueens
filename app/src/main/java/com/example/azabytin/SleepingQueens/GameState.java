@@ -12,17 +12,15 @@ import java.util.List;
 
 public class GameState implements iGame {
 
-    protected List<Card> ComputerQueenCards;
-    protected List<Card> HumanQueenCards;
-    protected List<Card> HumanCards;
-    protected List<Card> ComputerCards;
-    Card LastCard;
-    Card BeforeLastCard;
-    iGame.Winner whoWinner;
-    boolean canUserPlay;
-    iGame serverLogic;
-
-    String serverHost;
+    private List<Card> ComputerQueenCards;
+    private List<Card> HumanQueenCards;
+    private List<Card> HumanCards;
+    private List<Card> ComputerCards;
+    private Card LastCard;
+    private Card BeforeLastCard;
+    private iGame.Winner whoWinner;
+    private boolean canUserPlay;
+    private final String serverHost;
 
     public GameState( String _serverHost)
     {
@@ -39,7 +37,6 @@ public class GameState implements iGame {
             canUserPlay = _serverLogic.canOponentPlay();
 
         ComputerCards = _serverLogic.getPlayerCards();
-        serverLogic         = _serverLogic;
     }
 
     public void startNewGame(){}
@@ -79,7 +76,7 @@ public class GameState implements iGame {
             protected Boolean doInBackground(final Void... params) {
                 try {
                     new ClientSocketSerializer(serverHost).writeCardsToPlay(cardsToPlay);
-                }catch (Exception e){}
+                }catch (Exception ignored){}
                 return true;
             }
         }.execute();
@@ -95,7 +92,7 @@ public class GameState implements iGame {
             protected GameLogic doInBackground(final Void... params) {
                 try {
                     return new ClientSocketSerializer(serverHost).readGameLogic();
-                }catch (Exception e){}
+                }catch (Exception ignored){}
                 return null;
             }
 

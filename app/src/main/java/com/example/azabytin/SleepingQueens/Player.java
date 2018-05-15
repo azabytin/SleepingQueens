@@ -9,21 +9,21 @@ import java.util.List;
 
 public class Player implements java.io.Serializable
 {
-    protected UserCards сards;
-    protected List<Card> queenCards;
-    protected Player opponent;
-    protected boolean canUserPlay;
+    private final UserCards сards;
+    private final List<Card> queenCards;
+    private Player opponent;
+    boolean canUserPlay;
 
     public Player( Player o)
     {
         opponent = o;
         сards = new UserCards();
-        queenCards = new ArrayList<Card>();
+        queenCards = new ArrayList<>();
     }
     public Player( )
     {
         сards = new UserCards();
-        queenCards = new ArrayList<Card>();
+        queenCards = new ArrayList<>();
     }
 
     public void play(){
@@ -66,11 +66,7 @@ public class Player implements java.io.Serializable
         }
     }
 
-    public boolean hasThisNumber(Card card){
-        return сards.hasThisNumber(card);
-    }
-
-    protected boolean hasDogCatQueen(){
+    private boolean hasDogCatQueen(){
         for( Card card : queenCards){
             if( card.isDogCatQueen()){
                 return true;
@@ -111,10 +107,6 @@ public class Player implements java.io.Serializable
 
     void RemovecCard( Card card ){
         сards.remove( card );
-    }
-
-    Card peekUserCard(){
-        return сards.get(0);
     }
 
     public boolean isCanUserPlay() {

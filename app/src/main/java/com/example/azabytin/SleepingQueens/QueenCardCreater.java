@@ -1,6 +1,4 @@
 package com.example.azabytin.SleepingQueens;
-import com.example.azabytin.SleepingQueens.Card;
-import com.example.azabytin.SleepingQueens.CardCreater;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,7 @@ import java.util.List;
 public class QueenCardCreater implements CardCreater {
     public List<Card> createPlayCards()
     {
-        List<Card> cards= new ArrayList<Card>();
+        List<Card> cards= new ArrayList<>();
 
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen1, 10 ) );
         cards.add( new Card( Card.cardType.queen, com.example.azabytin.SleepingQueens.R.drawable.queen2, 5 ) );

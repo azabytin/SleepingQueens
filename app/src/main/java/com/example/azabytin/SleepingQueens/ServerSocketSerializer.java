@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 class ServerSocketSerializer {
     private ServerSocketChannel ssChannel;
-    private SocketChannel sChannel;
     private ObjectOutputStream oos = null;
     private ObjectInputStream ois = null;
 
@@ -25,12 +24,12 @@ class ServerSocketSerializer {
     public void close() {
         try {
             ssChannel.close();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
     public void accept() throws java.io.IOException {
-        sChannel = ssChannel.accept();
+        SocketChannel sChannel = ssChannel.accept();
         sChannel.socket().setSoTimeout(200);
         oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
         ois = new ObjectInputStream(sChannel.socket().getInputStream());

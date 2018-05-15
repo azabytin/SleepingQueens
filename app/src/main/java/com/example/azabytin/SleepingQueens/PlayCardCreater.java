@@ -11,7 +11,7 @@ public class PlayCardCreater implements CardCreater {
 
     public List<Card> createPlayCards()
     {
-        List<Card> cards= new ArrayList<Card>();
+        List<Card> cards= new ArrayList<>();
 
         cards.add( new Card( Card.cardType.number, com.example.azabytin.SleepingQueens.R.drawable.card1, 1 ) );
         cards.add( new Card( Card.cardType.number, com.example.azabytin.SleepingQueens.R.drawable.card2, 2 ) );

@@ -6,10 +6,10 @@ import java.util.ArrayList;
  * Created by azabytin on 21.03.2018.
  */
 
-public class AiOponent {
+class AiOponent {
 
-    protected Player humanPlayer;
-    protected Player computerPlayer;
+    private final Player humanPlayer;
+    private final Player computerPlayer;
 
     public AiOponent(Player computerPlayer_, Player humanPlayer_)
     {
@@ -17,7 +17,7 @@ public class AiOponent {
         computerPlayer = computerPlayer_;
     }
 
-    protected void ChooseOponentCardToPlay( Card.cardType enemyLastCard,  ArrayList<Card> cardsToPlay )
+    void ChooseOponentCardToPlay(Card.cardType enemyLastCard, ArrayList<Card> cardsToPlay)
     {
         if(enemyLastCard == Card.cardType.magic && computerPlayer.GetCards().GetStick() != null){
             cardsToPlay.add(computerPlayer.GetCards().GetStick());
