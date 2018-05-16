@@ -1,31 +1,31 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private iGame gameLogic;
-    private Hashtable< Integer, Card> cardButtonToCardHash;
-    private ArrayList<Card> selectedCardsToPlay;
     private NetworkGameThread networkGameThread = null;
     private boolean needUpdate = true;
     private ProgressDialog networkConnectProgressDialog = null;
+    private final ArrayList<ImageButton> userCardsButtons = new ArrayList<>();
 
+    private ImageButton usedCardBbutton;
+    private ImageButton beforeUsedCardBbutton;
+
+    private CardsProcessor cardProcessor;
 
     class ClientServerNegotiatorThread extends Thread {
         @Override
@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
 
+        cardProcessor = new CardsProcessor( gameLogic );
         timerHandler.postDelayed(executeUpdateClientGameState, 1000);
         UpdateCardsView();
     }
@@ -143,23 +144,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    private void setUsedCardButton(int resourceId)
-    {
-        android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
-        button.setImageResource( resourceId );
-    }
-
-    private void setBeforeUsedCardButton(int resourceId)
-    {
-        android.widget.ImageButton button = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
-        button.setImageResource( resourceId );
-    }
-
     private void CleanUp()
     {
         gameLogic = null;
-        cardButtonToCardHash = new Hashtable<>();
-        selectedCardsToPlay = new ArrayList<>();
+        cardProcessor.reset();
 
         if( networkGameThread != null ){
             networkGameThread.stopThread();
@@ -173,45 +161,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void onStartNewGame()
     {
         CleanUp();
-        CharSequence[] items = {"Играть с Андроидом", "Играть по сети вдвоем"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Выбери режим игры");
+        DialogsBuilder.buildNetworkConnectProgressDialog(this, (a,item)->{
+                    if(item==1)
+                        OnStartTwoPlayerGame();
+                    else
+                        OnStartOnePlayerGame();
+                }
+        ).show();
 
-        DialogInterface.OnClickListener onGameSelection = (a,item)->{
-            if(item==1)
-                OnStartTwoPlayerGame();
-            else
-                OnStartOnePlayerGame();
-        };
-        builder.setItems(items, onGameSelection);
-        builder.setCancelable(false);
-        AlertDialog alert = builder.create();
-        alert.show();
     }
 
     private  void OnStartTwoPlayerGame()
     {
-        new ClientServerNegotiatorThread().run();
+        //new ClientServerNegotiatorThread().start();
         UpdateCardsView();
-
-        networkConnectProgressDialog = new ProgressDialog(this);
-        networkConnectProgressDialog.setMessage("Жду второго игрока... ");
-        networkConnectProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        networkConnectProgressDialog.setIndeterminate(true);
-        networkConnectProgressDialog.setCancelable(false);
-
-        networkConnectProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", (dialog, which)-> {
-            dialog.dismiss();
-            CleanUp();
-            onStartNewGame();
-        });
-
-        networkConnectProgressDialog.show();
+        DialogsBuilder.buildNetworkConnectProgressDialog(this, (dialog, which)-> {
+                    dialog.dismiss();
+                    CleanUp();
+                    onStartNewGame();
+                    }
+                ).show();
 
     }
     private  void OnStartOnePlayerGame()
     {
         gameLogic = new GameLogic();
+        cardProcessor = new CardsProcessor( gameLogic );
         timerHandler.postDelayed(timerOponentPlay, 0);
         UpdateCardsView();
     }
@@ -222,6 +197,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(com.example.azabytin.SleepingQueens.R.layout.activity_main);
         Toolbar toolbar = findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        for (int i = 0; i < 5; i++) {
+            int buttonId = com.example.azabytin.SleepingQueens.R.id.cardButton1 + i;
+            android.widget.ImageButton button = findViewById( buttonId);
+            userCardsButtons.add(button);
+        }
+        usedCardBbutton = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
+        beforeUsedCardBbutton = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
+
+
         timerHandler.postDelayed(timerRunnable, 0);
     }
 
@@ -239,29 +224,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    private void showWinMessage(String message)
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Игра окончена");
-        builder.setMessage(message);
-        builder.setCancelable(false);
-        builder.setPositiveButton( "Новая игра", (dialog, which)-> onStartNewGame() );
-        builder.show();
-    }
-
     public void onClickPlay() {
 
         new AsyncTask<Void, Boolean, Boolean>() {
             @Override
             protected Boolean doInBackground( final Void ... params ) {
-                return gameLogic.userPlayCards(selectedCardsToPlay);
+                return gameLogic.userPlayCards(cardProcessor.getCardsToPlay());
             }
 
             @Override
             protected void onPostExecute( final Boolean result ) {
+                cardProcessor.cleartCardsToPlay();
                 if( result ) {
-                    selectedCardsToPlay.clear();
                     UpdateCardsView();
                     needUpdate = true;
                 }
@@ -271,53 +245,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick( View v) {
-        try {
-            Card card = cardButtonToCardHash.get(v.getId());
-
-            if( selectedCardsToPlay.contains(card)){
-                selectedCardsToPlay.remove(card);
-            }else{
-                selectedCardsToPlay.add(card);
-            }
-        }
-        catch(Exception ignored)
-            {}
+        cardProcessor.onButtonClick(v);
     }
 
     private void UpdateCheckedCardsView()
     {
         Button playButton = findViewById(R.id.playButton);
-        if (gameLogic != null && gameLogic.canUserPlay()) {
-            playButton.setEnabled(true);
-        } else {
-            playButton.setEnabled(false);
-        }
+        playButton.setEnabled( gameLogic != null && gameLogic.canUserPlay()) ;
 
-        android.widget.ImageButton button;
-        int i;
-        for (i = 0; i < 5; i++) {
-            int buttonId = com.example.azabytin.SleepingQueens.R.id.cardButton1 + i;
-            button = findViewById( buttonId);
-
-            if( selectedCardsToPlay.contains( cardButtonToCardHash.get(buttonId) ))
-            {
+        for (ImageButton button : userCardsButtons){
+            if( cardProcessor.isCardSelected( button) ){
                 button.setBackgroundResource( R.color.colorAccent );
-            }
-            else
-            {
+            } else{
                 button.setBackgroundResource( R.color.white);
             }
-        }
-
-    }
-
-    private void SetPlayerCardsImages(){
-
-        int i = 0;
-        cardButtonToCardHash.clear();
-        List<Card> playerCards= gameLogic.getPlayerCards();
-        for( Card card : playerCards ){
-            cardButtonToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card );
         }
     }
 
@@ -325,29 +266,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
           try{
 
               setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
-              SetPlayerCardsImages();
+              cardProcessor.updatePlayerCards();
 
-            if (gameLogic.getLastCard() == null || gameLogic.getLastCard().resourceId == 0 ) {
-                setUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
-            }
-            else {
-                setUsedCardButton(gameLogic.getLastCard().resourceId);
-            }
-
-            if (gameLogic.getBeforeLastCard() != null)
-                setBeforeUsedCardButton(gameLogic.getBeforeLastCard().resourceId);
-            else
-                setBeforeUsedCardButton(com.example.azabytin.SleepingQueens.R.drawable.back);
+              usedCardBbutton.setImageResource( cardProcessor.getUsedCardResourceId() );
+              beforeUsedCardBbutton.setImageResource( cardProcessor.getBeforeUsedCardResourceId() );
 
             setButtonsImages(gameLogic.getPlayerQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
             setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
 
             if (gameLogic.whoIsWinner() == iGame.Winner.PlayerWinner) {
                 CleanUp();
-                showWinMessage("Вы выиграли");
+                DialogsBuilder.buildGameoverDialog(this, "Вы выиграли", (dialog, which)-> onStartNewGame());
             } else if (gameLogic.whoIsWinner() == iGame.Winner.OpponentWinner) {
                 CleanUp();
-                showWinMessage("Вы проиграли!");
+                DialogsBuilder.buildGameoverDialog(this, "Вы проиграли!", (dialog, which)-> onStartNewGame());
             }
         }catch(Exception ignored){}
 
@@ -370,23 +302,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void onSendfeedbackButton(View v)
     {
-        Intent feedbackEmail = new Intent(Intent.ACTION_SEND);
-        feedbackEmail.setType("text/email");
-        feedbackEmail.putExtra(Intent.EXTRA_EMAIL, new String[] {"azabytin@gmail.com"});
-        feedbackEmail.putExtra(Intent.EXTRA_SUBJECT, "Отзыв");
-        startActivity(Intent.createChooser(feedbackEmail, "Отправить отзыв ( Нужно выбрать Gmail ):"));
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Отправка отзыва");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.setMessage("Для отправки отзыва нужно выбрать Gmail");
-        builder.setCancelable(false);
-        builder.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        });
-        builder.show();
+        DialogsBuilder.buildSendFeedbackDialog(this).show();
     }
 }
 
