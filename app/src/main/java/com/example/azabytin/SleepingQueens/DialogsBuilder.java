@@ -9,8 +9,9 @@ import android.support.v7.app.AlertDialog;
 
 public class DialogsBuilder {
 
+    private static ProgressDialog networkConnectProgressDialog = null;
     public static ProgressDialog buildNetworkConnectProgressDialog(Context context, DialogInterface.OnClickListener listener ){
-        ProgressDialog networkConnectProgressDialog = new ProgressDialog(context);
+        networkConnectProgressDialog = new ProgressDialog(context);
         networkConnectProgressDialog.setMessage("Жду второго игрока... ");
         networkConnectProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         networkConnectProgressDialog.setIndeterminate(true);
@@ -19,6 +20,12 @@ public class DialogsBuilder {
         networkConnectProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Отмена", listener);
 
         return networkConnectProgressDialog;
+    }
+
+    public static void dismissNetworkConnectProgressDialog(){
+        if( networkConnectProgressDialog != null ){
+            networkConnectProgressDialog.dismiss();
+        }
     }
 
     public static AlertDialog buildGameTypeSelectorDialog(Context context, DialogInterface.OnClickListener listener ){

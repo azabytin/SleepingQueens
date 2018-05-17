@@ -89,10 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         gameLogic = new GameLogic();
 
-        if( networkConnectProgressDialog != null ){
-            networkConnectProgressDialog.dismiss();
-            networkConnectProgressDialog = null;
-        }
+        DialogsBuilder.dismissNetworkConnectProgressDialog();
 
         if( clientServerNegotiator.getGameType() == ClientServerNegotiator.GameType.ServerGame ){
             networkGameThread = new NetworkGameThread( new GameLogic() );
