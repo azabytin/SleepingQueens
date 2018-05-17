@@ -6,13 +6,17 @@ package com.example.azabytin.SleepingQueens;
 
 public class Card implements java.io.Serializable{
 
-    public enum cardType{number, king, queen, stick, magic, knight, dragon, jocker}
+    public enum cardType{none, number, king, queen, stick, magic, knight, dragon, jocker}
 
     public Card( cardType t, int r )
     {
         this( t, r, 0);
     }
 
+    public Card( int r )
+    {
+        this( cardType.none, r, 0);
+    }
     public Card( cardType t)
     {
         this( t, 0, 0);

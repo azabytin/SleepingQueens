@@ -20,12 +20,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetworkGameThread networkGameThread = null;
     private boolean needUpdate = true;
     private ProgressDialog networkConnectProgressDialog = null;
-    private final ArrayList<ImageButton> userCardsButtons = new ArrayList<>();
-
-    private ImageButton usedCardBbutton;
-    private ImageButton beforeUsedCardBbutton;
+    private ButtonUpdater buttonUpdater;
 
     private CardsProcessor cardProcessor;
+    private Button playButton = findViewById(R.id.playButton);
 
     class ClientServerNegotiatorThread extends Thread {
         @Override
@@ -127,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void run() {
-            UpdateCheckedCardsView();
+            UpdateCardsView();
             timerHandler.postDelayed(this, 100);
         }
     };
@@ -198,31 +196,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        for (int i = 0; i < 5; i++) {
-            int buttonId = com.example.azabytin.SleepingQueens.R.id.cardButton1 + i;
-            android.widget.ImageButton button = findViewById( buttonId);
-            userCardsButtons.add(button);
-        }
-        usedCardBbutton = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
-        beforeUsedCardBbutton = findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
-
+        buttonUpdater = new ButtonUpdater( this, cardProcessor);
 
         timerHandler.postDelayed(timerRunnable, 0);
     }
 
-    private void setButtonsImages(List<Card> cards, int firstButton)
-    {
-       android.widget.ImageButton button;
-        int i;
-        for (i = 0; i < cards.size(); i++) {
-            button = findViewById( firstButton + i);
-            button.setImageResource(cards.get(i).resourceId);
-        }
-        for (; i < 5; i++) {
-            button = findViewById( firstButton + i);
-            button.setImageResource(com.example.azabytin.SleepingQueens.R.drawable.empty);
-        }
-    }
 
     public void onClickPlay() {
 
@@ -248,33 +226,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardProcessor.onButtonClick(v);
     }
 
-    private void UpdateCheckedCardsView()
-    {
-        Button playButton = findViewById(R.id.playButton);
-        playButton.setEnabled( gameLogic != null && gameLogic.canUserPlay()) ;
-
-        for (ImageButton button : userCardsButtons){
-            if( cardProcessor.isCardSelected( button) ){
-                button.setBackgroundResource( R.color.colorAccent );
-            } else{
-                button.setBackgroundResource( R.color.white);
-            }
-        }
-    }
-
     private void UpdateCardsView() {
           try{
 
-              setButtonsImages(gameLogic.getPlayerCards(), com.example.azabytin.SleepingQueens.R.id.cardButton1);
               cardProcessor.updatePlayerCards();
+              buttonUpdater.run();
+              playButton.setEnabled( gameLogic != null && gameLogic.canUserPlay()) ;
 
-              usedCardBbutton.setImageResource( cardProcessor.getUsedCardResourceId() );
-              beforeUsedCardBbutton.setImageResource( cardProcessor.getBeforeUsedCardResourceId() );
-
-            setButtonsImages(gameLogic.getPlayerQueenCards(), com.example.azabytin.SleepingQueens.R.id.queenCardButton1);
-            setButtonsImages(gameLogic.getOpponentQueenCards(), com.example.azabytin.SleepingQueens.R.id.oponentQueenCardButton1);
-
-            if (gameLogic.whoIsWinner() == iGame.Winner.PlayerWinner) {
+              if (gameLogic.whoIsWinner() == iGame.Winner.PlayerWinner) {
                 CleanUp();
                 DialogsBuilder.buildGameoverDialog(this, "Вы выиграли", (dialog, which)-> onStartNewGame());
             } else if (gameLogic.whoIsWinner() == iGame.Winner.OpponentWinner) {
@@ -283,15 +242,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }catch(Exception ignored){}
 
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-    @Override
-    public void onStop(){
-        super.onStop();
     }
 
     @Override

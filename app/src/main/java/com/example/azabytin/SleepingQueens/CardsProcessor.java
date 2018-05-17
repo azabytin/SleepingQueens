@@ -82,4 +82,32 @@ public class CardsProcessor {
         catch(Exception ignored)
         {}
     }
+
+    public List<Card> getPlayerCards(){
+
+        List<Card> cards = game.getPlayerCards();
+        for (int i = 0; i < 6 - cards.size(); i++) {
+            cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
+        }
+
+        return cards;
+    }
+    public List<Card> getPlayerQueenCards(){
+
+        List<Card> cards = game.getPlayerQueenCards();
+        for (int i = 0; i < 6 - cards.size(); i++) {
+            cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
+        }
+
+        return cards;
+    }
+    public List<Card> getOpponentQueenCards(){
+
+        List<Card> cards = game.getOpponentQueenCards();
+        for (int i = 0; i < 6 - cards.size(); i++) {
+            cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
+        }
+
+        return cards;
+    }
 }
