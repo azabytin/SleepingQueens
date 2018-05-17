@@ -20,10 +20,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetworkGameThread networkGameThread = null;
     private boolean needUpdate = true;
     private ProgressDialog networkConnectProgressDialog = null;
-    private ButtonUpdater buttonUpdater;
+    private ButtonUpdater buttonUpdater = null;
 
-    private CardsProcessor cardProcessor;
-    private Button playButton = findViewById(R.id.playButton);
+    private CardsProcessor cardProcessor = null;
+    private Button playButton = null;
 
     class ClientServerNegotiatorThread extends Thread {
         @Override
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
             try {
                 while( !Thread.interrupted() && clientServerNegotiator.WaitForNewPeer() > 1 ){
-                    Thread.sleep(10);
+                    Thread.sleep(100);
                 }
             } catch (Exception ignored){
             }
@@ -145,7 +145,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void CleanUp()
     {
         gameLogic = null;
-        cardProcessor.reset();
+        if( cardProcessor != null )
+            cardProcessor.reset();
 
         if( networkGameThread != null ){
             networkGameThread.stopThread();
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void onStartNewGame()
     {
         CleanUp();
-        DialogsBuilder.buildNetworkConnectProgressDialog(this, (a,item)->{
+        DialogsBuilder.buildGameTypeSelectorDialog(this, (a,item)->{
                     if(item==1)
                         OnStartTwoPlayerGame();
                     else
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private  void OnStartTwoPlayerGame()
     {
-        //new ClientServerNegotiatorThread().start();
+        new ClientServerNegotiatorThread().start();
         UpdateCardsView();
         DialogsBuilder.buildNetworkConnectProgressDialog(this, (dialog, which)-> {
                     dialog.dismiss();
@@ -196,13 +197,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        buttonUpdater = new ButtonUpdater( this, cardProcessor);
-
-        timerHandler.postDelayed(timerRunnable, 0);
+        timerHandler.postDelayed(timerRunnable, 1000);
     }
 
 
-    public void onClickPlay() {
+    public void onClickPlay(View v) {
 
         new AsyncTask<Void, Boolean, Boolean>() {
             @Override
@@ -228,6 +227,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void UpdateCardsView() {
           try{
+
+              //TODO: Add game state so you don't have to update when user choosing game type and wait peer on net
+              if(buttonUpdater == null && cardProcessor != null)
+                buttonUpdater = new ButtonUpdater( this, cardProcessor);
+              if( playButton == null )
+              playButton = findViewById(R.id.playButton);
+
 
               cardProcessor.updatePlayerCards();
               buttonUpdater.run();

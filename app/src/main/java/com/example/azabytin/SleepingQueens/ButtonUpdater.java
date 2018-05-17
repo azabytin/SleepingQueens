@@ -13,15 +13,18 @@ public class ButtonUpdater implements Runnable{
     private CardsProcessor cardProcessor;
     private final ArrayList<Runnable> buttonsUpdaters= new ArrayList<>();
 
-    ImageButton usedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
-    ImageButton beforeUsedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
+    ImageButton usedCardBbutton;
+    ImageButton beforeUsedCardBbutton;
 
     public ButtonUpdater(Activity _mainActivity, CardsProcessor _cardProcessor){
         mainActivity = _mainActivity;
         cardProcessor= _cardProcessor;
 
+        usedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
+        beforeUsedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );
+
         buttonsUpdaters.add(  ()-> usedCardBbutton.setImageResource( cardProcessor.getUsedCardResourceId() ));
-        buttonsUpdaters.add(  ()-> usedCardBbutton.setImageResource( cardProcessor.getBeforeUsedCardResourceId() ));
+        buttonsUpdaters.add(  ()-> beforeUsedCardBbutton.setImageResource( cardProcessor.getBeforeUsedCardResourceId() ));
     }
 
     private void setButtonsImages(List<Card> cards, int firstButton)

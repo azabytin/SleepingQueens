@@ -66,12 +66,12 @@ public class CardsProcessor {
 
 
     public boolean isCardSelected( View button){
-        return selectedCardsToPlay.contains( cardButtonToCardHash.get(button));
+        return selectedCardsToPlay.contains( cardButtonToCardHash.get(button.getId()));
     }
 
     public void onButtonClick( View button){
         try {
-            Card card = cardButtonToCardHash.get(button);
+            Card card = cardButtonToCardHash.get(button.getId());
 
             if( selectedCardsToPlay.contains(card)){
                 selectedCardsToPlay.remove(card);
@@ -85,8 +85,8 @@ public class CardsProcessor {
 
     public List<Card> getPlayerCards(){
 
-        List<Card> cards = game.getPlayerCards();
-        for (int i = 0; i < 6 - cards.size(); i++) {
+        ArrayList<Card> cards = new ArrayList<Card>( game.getPlayerCards());
+        for (int i = 0; i < 5 - cards.size(); i++) {
             cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
         }
 
@@ -94,7 +94,7 @@ public class CardsProcessor {
     }
     public List<Card> getPlayerQueenCards(){
 
-        List<Card> cards = game.getPlayerQueenCards();
+        ArrayList<Card> cards = new ArrayList<Card>( game.getPlayerQueenCards());
         for (int i = 0; i < 6 - cards.size(); i++) {
             cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
         }
@@ -102,8 +102,7 @@ public class CardsProcessor {
         return cards;
     }
     public List<Card> getOpponentQueenCards(){
-
-        List<Card> cards = game.getOpponentQueenCards();
+        ArrayList<Card> cards = new ArrayList<Card>( game.getOpponentQueenCards());
         for (int i = 0; i < 6 - cards.size(); i++) {
             cards.add( new Card(com.example.azabytin.SleepingQueens.R.drawable.empty) );
         }
