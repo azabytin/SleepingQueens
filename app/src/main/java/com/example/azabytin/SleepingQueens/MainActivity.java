@@ -8,17 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private iGame gameLogic;
     private NetworkGameThread networkGameThread = null;
-    private boolean needUpdate = true;
     private ProgressDialog networkConnectProgressDialog = null;
     private ButtonUpdater buttonUpdater = null;
 
@@ -30,10 +27,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void run() {
             ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
             try {
-                while( !Thread.interrupted() && clientServerNegotiator.WaitForNewPeer() > 1 ){
+                while( !Thread.interrupted() && clientServerNegotiator.WaitForNewPeer() < 2 ){
                     Thread.sleep(100);
                 }
             } catch (Exception ignored){
+                String s = ignored.toString();
             }
             runOnUiThread( ()-> onNetworkPeerFound( clientServerNegotiator )) ;
         }
@@ -68,11 +66,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     serverSerializer.writeGameLogic(serverThreadGameLogic);
 
                     ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
-                    runOnUiThread( ()-> {
-                        if(gameLogic.oponentPlayCards(cardsToPlay)) {
-                            UpdateCardsView();
-                        }
-                    }) ;
+                    runOnUiThread( ()-> gameLogic.oponentPlayCards(cardsToPlay));
+
 
                 } catch (Exception e) {
                     //Log.e("NetworkGameThread", "serverLoop::Exception");
@@ -98,9 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
 
-        cardProcessor = new CardsProcessor( gameLogic );
-        timerHandler.postDelayed(executeUpdateClientGameState, 1000);
-        UpdateCardsView();
+        cardProcessor.setGame( gameLogic );
+        timerHandler.postDelayed(updateTimerRunnable, 100);
+        timerHandler.postDelayed(executeUpdateClientGameState, 100);
     }
 
     private final Runnable executeUpdateClientGameState = new Runnable()  {
@@ -110,81 +105,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             GameState gameState = (GameState) gameLogic;
             gameState.Update();
-            if(needUpdate || gameLogic.canUserPlay()){
-                UpdateCardsView();
-            }
             timerHandler.postDelayed(this, 1000);
         }
     };
 
     private final Handler timerHandler = new Handler();
-    private final Runnable timerRunnable = new Runnable()  {
+    private final Runnable updateTimerRunnable = new Runnable()  {
 
         @Override
         public void run() {
-            UpdateCardsView();
+            runOnUiThread(()-> doUpdateCardsView());
             timerHandler.postDelayed(this, 100);
         }
     };
 
-    private final Runnable timerOponentPlay = new Runnable()  {
+    private final Runnable timerOponentPlayRunnable = new Runnable()  {
 
         @Override
         public void run() {
-            if( gameLogic != null && gameLogic.canOponentPlay() ){
-                gameLogic.oponentPlayCards( new ArrayList<>());
-                UpdateCardsView();
-            }
+            runOnUiThread(()-> gameLogic.oponentPlayCards( ));
             timerHandler.postDelayed(this, 2000);
         }
     };
 
-    private void CleanUp()
+    private void stopTimersAndThreads()
     {
-        gameLogic = null;
-        if( cardProcessor != null )
-            cardProcessor.reset();
-
-        if( networkGameThread != null ){
+        timerHandler.removeCallbacks(updateTimerRunnable);
+        timerHandler.removeCallbacks(timerOponentPlayRunnable);
+        timerHandler.removeCallbacks(executeUpdateClientGameState);
+        if( networkGameThread != null ) {
             networkGameThread.stopThread();
-            try{
-                networkGameThread.join();
-                networkGameThread = null;
-            }catch (Exception ignored){}
         }
     }
 
-    private void onStartNewGame()
+    private void doStartNewGame()
     {
-        CleanUp();
+        stopTimersAndThreads();
         DialogsBuilder.buildGameTypeSelectorDialog(this, (a,item)->{
                     if(item==1)
-                        OnStartTwoPlayerGame();
+                        onStartTwoPlayerGame();
                     else
-                        OnStartOnePlayerGame();
+                        onStartOnePlayerGame();
                 }
         ).show();
 
     }
 
-    private  void OnStartTwoPlayerGame()
+    private  void onStartTwoPlayerGame()
     {
+        cardProcessor = new CardsProcessor( new iGame());
+        buttonUpdater = new ButtonUpdater( this, cardProcessor);
+        playButton = findViewById(R.id.playButton);
+
         new ClientServerNegotiatorThread().start();
-        UpdateCardsView();
         DialogsBuilder.buildNetworkConnectProgressDialog(this, (dialog, which)-> {
                     dialog.dismiss();
-                    CleanUp();
-                    onStartNewGame();
+                    doStartNewGame();
                     }
                 ).show();
 
     }
-    private  void OnStartOnePlayerGame()
+    private  void onStartOnePlayerGame()
     {
         gameLogic = new GameLogic();
         cardProcessor = new CardsProcessor( gameLogic );
-        timerHandler.postDelayed(timerOponentPlay, 0);
-        UpdateCardsView();
+        buttonUpdater = new ButtonUpdater( this, cardProcessor);
+        playButton = findViewById(R.id.playButton);
+
+        timerHandler.postDelayed(updateTimerRunnable, 100);
+        timerHandler.postDelayed(timerOponentPlayRunnable, 0);
     }
 
     @Override
@@ -193,8 +182,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(com.example.azabytin.SleepingQueens.R.layout.activity_main);
         Toolbar toolbar = findViewById(com.example.azabytin.SleepingQueens.R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        timerHandler.postDelayed(timerRunnable, 1000);
     }
 
 
@@ -209,10 +196,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             protected void onPostExecute( final Boolean result ) {
                 cardProcessor.cleartCardsToPlay();
-                if( result ) {
-                    UpdateCardsView();
-                    needUpdate = true;
-                }
             }
         }.execute();
     }
@@ -222,26 +205,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardProcessor.onButtonClick(v);
     }
 
-    private void UpdateCardsView() {
+    private void doUpdateCardsView() {
           try{
-
-              //TODO: Add game state so you don't have to update when user choosing game type and wait peer on net
-              if(buttonUpdater == null && cardProcessor != null)
-                buttonUpdater = new ButtonUpdater( this, cardProcessor);
-              if( playButton == null )
-              playButton = findViewById(R.id.playButton);
-
-
               cardProcessor.updatePlayerCards();
               buttonUpdater.run();
               playButton.setEnabled( gameLogic != null && gameLogic.canUserPlay()) ;
 
               if (gameLogic.whoIsWinner() == iGame.Winner.PlayerWinner) {
-                CleanUp();
-                DialogsBuilder.buildGameoverDialog(this, "Вы выиграли", (dialog, which)-> onStartNewGame());
+                  stopTimersAndThreads();
+                DialogsBuilder.buildGameoverDialog(this, "Вы выиграли", (dialog, which)-> doStartNewGame()).show();
             } else if (gameLogic.whoIsWinner() == iGame.Winner.OpponentWinner) {
-                CleanUp();
-                DialogsBuilder.buildGameoverDialog(this, "Вы проиграли!", (dialog, which)-> onStartNewGame());
+                  stopTimersAndThreads();
+                DialogsBuilder.buildGameoverDialog(this, "Вы проиграли!", (dialog, which)-> doStartNewGame()).show();
             }
         }catch(Exception ignored){}
 
@@ -250,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onResume(){
         super.onResume();
-        onStartNewGame();
+        doStartNewGame();
         }
 
     public void onSendfeedbackButton(View v)

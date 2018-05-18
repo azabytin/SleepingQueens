@@ -54,13 +54,16 @@ public class ClientServerNegotiator {
         InitSocket();
         udpSocketForNegotiation.send(broadcastPkt);
 
-        while (!hasNewPeer) {
-            udpSocketForNegotiation.receive(broadcastPkFromPeer);
-            if (isPktFromNewPeer(broadcastPkFromPeer)) {
-                hasNewPeer = true;
-                udpSocketForNegotiation.send(broadcastPkt);
+        try {
+            while (!hasNewPeer) {
+                udpSocketForNegotiation.receive(broadcastPkFromPeer);
+                if (isPktFromNewPeer(broadcastPkFromPeer)) {
+                    hasNewPeer = true;
+                    udpSocketForNegotiation.send(broadcastPkt);
+                }
             }
-        }
+        }catch (Exception ignored)
+        {}
 
         CloseSocket();
 
@@ -75,7 +78,7 @@ public class ClientServerNegotiator {
 
     private boolean isPktFromNewPeer(DatagramPacket pkt){
 
-        String peerAddr = pkt.getAddress().getHostName();
+        String peerAddr = pkt.getAddress().getHostAddress();
         return !allPeersAddresses.contains(peerAddr );
     }
 

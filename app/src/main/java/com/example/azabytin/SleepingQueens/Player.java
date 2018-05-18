@@ -122,7 +122,7 @@ public class Player implements java.io.Serializable
         for( Card card: queenCards){
             value += card.getValue();
         }
-        return (value >= 50) || (queenCards.size() > 4);
+        return (value >= 50) || (queenCards.size() > 2);
     }
 
 }

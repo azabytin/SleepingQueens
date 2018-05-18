@@ -7,7 +7,7 @@ import java.util.List;
  * Created by azabytin on 16.01.2018.
  */
 
-public class GameLogic implements iGame, java.io.Serializable {
+public class GameLogic extends iGame implements java.io.Serializable {
 
     private PlayCardsStack playCardsStack;
     private PlayCardsStack queenCardsStack;
@@ -32,18 +32,18 @@ public class GameLogic implements iGame, java.io.Serializable {
         opponent.setCanUserPlay(false);
         player.SetOpponent(this.opponent);
 
-        refillCardsFromStack();
+        refillAllPlayersCardsFromStack();
     }
 
-    protected void refillCardsFromStack(){
-        refillCardsFromStack(player);
-        refillCardsFromStack(opponent);
+    protected void refillAllPlayersCardsFromStack(){
+        refillAllPlayersCardsFromStack(player);
+        refillAllPlayersCardsFromStack(opponent);
     }
 
-    private void refillCardsFromStack(Player player){
+    private void refillAllPlayersCardsFromStack(Player player){
         if(player.CardsNumber()  < 5){
             player.AddCard(playCardsStack.Get());
-            refillCardsFromStack( player );
+            refillAllPlayersCardsFromStack( player );
         }
     }
 
@@ -79,7 +79,7 @@ public class GameLogic implements iGame, java.io.Serializable {
         }
 
         DropPlayerCard( card, player);
-        refillCardsFromStack( );
+        refillAllPlayersCardsFromStack( );
 
         if( card.isJocker()){
             if(  player.GetLastAddedCard().isOddNumver() ){
@@ -140,7 +140,6 @@ public class GameLogic implements iGame, java.io.Serializable {
         if( cardsToPlay == null || !canOponentPlay()){
             return false;
         }
-
 
         if( cardsToPlay.size() == 0){
             AiOponent ai = new AiOponent(opponent, player);

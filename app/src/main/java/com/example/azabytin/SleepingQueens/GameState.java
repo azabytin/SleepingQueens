@@ -10,7 +10,7 @@ import java.util.List;
  * Created by azabytin on 04.04.2018.
  */
 
-public class GameState implements iGame {
+public class GameState extends iGame {
 
     private List<Card> ComputerQueenCards;
     private List<Card> HumanQueenCards;

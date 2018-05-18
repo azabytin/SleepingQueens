@@ -16,6 +16,10 @@ public class CardsProcessor {
         game = _game;
         reset();
     }
+    public void setGame( iGame _game){
+        game = _game;
+        reset();
+    }
     public void reset(){
         cardButtonToCardHash = new Hashtable<>();
         selectedCardsToPlay = new ArrayList<>();
@@ -49,11 +53,10 @@ public class CardsProcessor {
     public void updatePlayerCards(){
         int i = 0;
         cardButtonToCardHash.clear();
-        List<Card> playerCards= game.getPlayerCards();
-        for( Card card : playerCards ){
-            cardButtonToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card );
+        List<Card> playerCards = game.getPlayerCards();
+        for (Card card : playerCards) {
+            cardButtonToCardHash.put(com.example.azabytin.SleepingQueens.R.id.cardButton1 + i++, card);
         }
-
     }
 
     public ArrayList<Card> getCardsToPlay(){

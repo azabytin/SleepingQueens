@@ -19,9 +19,9 @@ public class GameLogicTests extends Assert {
         GameLogicMocked( boolean _gameLogicCardsRefillPolicy){
             gameLogicCardsRefillPolicy = _gameLogicCardsRefillPolicy;
         }
-        protected void refillCardsFromStack(){
+        protected void refillAllPlayersCardsFromStack(){
             if( gameLogicCardsRefillPolicy ){
-                super.refillCardsFromStack();
+                super.refillAllPlayersCardsFromStack();
             }
         }
 
