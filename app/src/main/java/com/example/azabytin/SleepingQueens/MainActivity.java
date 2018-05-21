@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void run() {
             ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
             try {
-                while( !Thread.interrupted() && clientServerNegotiator.WaitForNewPeer() < 2 ){
+                while( !Thread.interrupted() && clientServerNegotiator.checkForNewPeer() < 2 ){
                     Thread.sleep(100);
                 }
             } catch (Exception ignored){
@@ -40,13 +40,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     class NetworkGameThread extends Thread {
 
         private final AtomicInteger loopCount = new AtomicInteger(Integer.MAX_VALUE);
-        private final GameLogic serverThreadGameLogic;
+        private final iGame serverThreadGameLogic;
 
         void stopThread() {
             loopCount.set(1);
         }
 
-        NetworkGameThread(GameLogic gameLogic){
+        NetworkGameThread(iGame gameLogic){
             serverThreadGameLogic = gameLogic;
         }
         @Override
@@ -82,16 +82,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void onNetworkPeerFound(ClientServerNegotiator clientServerNegotiator){
 
-        gameLogic = new GameLogic();
-
         DialogsBuilder.dismissNetworkConnectProgressDialog();
 
         if( clientServerNegotiator.getGameType() == ClientServerNegotiator.GameType.ServerGame ){
-            networkGameThread = new NetworkGameThread( new GameLogic() );
+            gameLogic = new GameLogic( new CardDealer() );
+            networkGameThread = new NetworkGameThread( gameLogic );
             networkGameThread.run();
+        }else {
+            gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
         }
-
-        gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
 
         cardProcessor.setGame( gameLogic );
         timerHandler.postDelayed(updateTimerRunnable, 100);
@@ -167,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private  void onStartOnePlayerGame()
     {
-        gameLogic = new GameLogic();
+        gameLogic = new GameLogic( new CardDealer() );
         cardProcessor = new CardsProcessor( gameLogic );
         buttonUpdater = new ButtonUpdater( this, cardProcessor);
         playButton = findViewById(R.id.playButton);

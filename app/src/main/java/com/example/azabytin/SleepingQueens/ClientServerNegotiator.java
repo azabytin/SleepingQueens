@@ -34,9 +34,6 @@ public class ClientServerNegotiator {
 
         broadcastPkt = new DatagramPacket(new byte[]{0}, 1, NetUtils.getBroadcastAddr(), 55555);
     }
-    private void CloseSocket() {
-        udpSocketForNegotiation.close();
-    }
 
     public int getClientId(){
         for (int i = 0; i < allPeersAddresses.size(); i++){
@@ -47,32 +44,39 @@ public class ClientServerNegotiator {
         return 0;
     }
 
-    public int WaitForNewPeer() throws java.io.IOException{
+    public int checkForNewPeer() {
 
         DatagramPacket broadcastPkFromPeer = new DatagramPacket(new byte[1], 1);
         boolean hasNewPeer = false;
-        InitSocket();
-        udpSocketForNegotiation.send(broadcastPkt);
 
         try {
+            InitSocket();
+            udpSocketForNegotiation.send(broadcastPkt);
+
             while (!hasNewPeer) {
                 udpSocketForNegotiation.receive(broadcastPkFromPeer);
                 if (isPktFromNewPeer(broadcastPkFromPeer)) {
                     hasNewPeer = true;
                     udpSocketForNegotiation.send(broadcastPkt);
+                    Thread.sleep(100);
                 }
             }
         }catch (Exception ignored)
-        {}
+        {
+            String s = ignored.toString();
+        }
 
-        CloseSocket();
+        udpSocketForNegotiation.close();
 
-         AddPeerToPeersList( broadcastPkFromPeer );
+         AddPeerToPeersList( broadcastPkFromPeer.getAddress().getHostName() );
          return allPeersAddresses.size();
    }
 
-    private void AddPeerToPeersList(DatagramPacket pktFromPeer ){
-        allPeersAddresses.add( pktFromPeer.getAddress().getHostName() );
+    private void AddPeerToPeersList(String peerAddr ){
+        if( allPeersAddresses.contains(peerAddr) ) {
+            return;
+        }
+        allPeersAddresses.add(peerAddr);
         Collections.sort(allPeersAddresses);
     }
 

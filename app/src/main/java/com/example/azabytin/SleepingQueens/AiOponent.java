@@ -11,10 +11,10 @@ class AiOponent {
     private final Player humanPlayer;
     private final Player computerPlayer;
 
-    public AiOponent(Player computerPlayer_, Player humanPlayer_)
+    public AiOponent(Player computerPlayer, Player humanPlayer)
     {
-        humanPlayer = humanPlayer_;
-        computerPlayer = computerPlayer_;
+        this.humanPlayer = humanPlayer;
+        this.computerPlayer = computerPlayer;
     }
 
     void ChooseOponentCardToPlay(Card.cardType enemyLastCard, ArrayList<Card> cardsToPlay)

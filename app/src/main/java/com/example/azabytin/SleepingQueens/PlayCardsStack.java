@@ -12,8 +12,8 @@ class PlayCardsStack  implements java.io.Serializable{
     private List<Card> cards;
     private final transient CardCreater cardCreater;
 
-    public PlayCardsStack( CardCreater с ){
-        cardCreater = с;
+    public PlayCardsStack( CardCreater cardCreater ){
+        this.cardCreater = cardCreater;
     }
 
     public Card Get(){

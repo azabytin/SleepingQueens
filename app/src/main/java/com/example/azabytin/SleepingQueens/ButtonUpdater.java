@@ -1,7 +1,6 @@
 package com.example.azabytin.SleepingQueens;
 
 import android.app.Activity;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 import java.util.ArrayList;
@@ -16,9 +15,9 @@ public class ButtonUpdater implements Runnable{
     ImageButton usedCardBbutton;
     ImageButton beforeUsedCardBbutton;
 
-    public ButtonUpdater(Activity _mainActivity, CardsProcessor _cardProcessor){
-        mainActivity = _mainActivity;
-        cardProcessor= _cardProcessor;
+    public ButtonUpdater(Activity mainActivity, CardsProcessor cardProcessor){
+        this.mainActivity = mainActivity;
+        this.cardProcessor= cardProcessor;
 
         usedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage );
         beforeUsedCardBbutton = mainActivity.findViewById( com.example.azabytin.SleepingQueens.R.id.usedStackImage2 );

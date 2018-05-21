@@ -9,22 +9,20 @@ import java.util.List;
 
 public class GameLogic extends iGame implements java.io.Serializable {
 
-    private PlayCardsStack playCardsStack;
-    private PlayCardsStack queenCardsStack;
+
+    private CardDealer cardDealer;
 
     protected Player player;
     protected Player opponent;
 
-    private final ArrayList<Card> playedCards = new ArrayList<>();
-
-    public GameLogic(){
+    public GameLogic(CardDealer cardDealer){
+        this.cardDealer = cardDealer;
         startNewGame();
     }
 
     public void startNewGame()
     {
-        queenCardsStack = new PlayCardsStack( new QueenCardCreater());
-        playCardsStack = new PlayCardsStack( new PlayCardCreater());
+        cardDealer.shuffleCards();
 
         player = new Player();
         opponent = new Player(player);
@@ -32,24 +30,8 @@ public class GameLogic extends iGame implements java.io.Serializable {
         opponent.setCanUserPlay(false);
         player.SetOpponent(this.opponent);
 
-        refillAllPlayersCardsFromStack();
-    }
-
-    protected void refillAllPlayersCardsFromStack(){
-        refillAllPlayersCardsFromStack(player);
-        refillAllPlayersCardsFromStack(opponent);
-    }
-
-    private void refillAllPlayersCardsFromStack(Player player){
-        if(player.CardsNumber()  < 5){
-            player.AddCard(playCardsStack.Get());
-            refillAllPlayersCardsFromStack( player );
-        }
-    }
-
-    private void DropPlayerCard(Card card, Player player){
-        playedCards.add(0, card);
-        player.RemovecCard( card );
+        cardDealer.refillAllPlayersCardsFromStack(player);
+        cardDealer.refillAllPlayersCardsFromStack(opponent);
     }
 
     private void playCard(Player player, Card card)
@@ -70,28 +52,29 @@ public class GameLogic extends iGame implements java.io.Serializable {
                 player.setPlayAgian();
             }
             else {
-                player.GetBackQueen(queenCardsStack);
+                cardDealer.takeQueenFromPlayer(player);
             }
         }
 
         if( card.isKing()){
-            player.AddQueenCard( queenCardsStack );
+            cardDealer.givePlayerQueen(player);
         }
 
-        DropPlayerCard( card, player);
-        refillAllPlayersCardsFromStack( );
+        cardDealer.flushCardFromPlayer( card, player);
+        cardDealer.refillAllPlayersCardsFromStack(player);
+        cardDealer.refillAllPlayersCardsFromStack(opponent);
 
         if( card.isJocker()){
-            if(  player.GetLastAddedCard().isOddNumver() ){
-                player.AddQueenCard( queenCardsStack );
+            if(  player.getLastAddedCard().isOddNumver() ){
+                cardDealer.givePlayerQueen(player);
             }
-            if(  player.GetLastAddedCard().isEvenNumver() ){
-                player.GetOpponent().AddQueenCard( queenCardsStack );
+            if(  player.getLastAddedCard().isEvenNumver() ){
+                cardDealer.givePlayerQueen( player.getOpponent() );
             }
         }
     }
 
-    private boolean IsCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
+    private boolean isCardsCanBePlayed(Player player, ArrayList<Card> cardsToPlay)
     {
         if( !player.canUserPlay ){
             return false;
@@ -108,12 +91,12 @@ public class GameLogic extends iGame implements java.io.Serializable {
         }
 
         if(cardsToPlay.size() == 2){
-            if( cardsToPlay.get(0).getValue() == cardsToPlay.get(1).getValue() )
+            if( cardsToPlay.get(0).getCardValue() == cardsToPlay.get(1).getCardValue() )
                 return true;
         }
 
         if(cardsToPlay.size() == 3){
-            if( (cardsToPlay.get(0).getValue() + cardsToPlay.get(1).getValue() ) == cardsToPlay.get(2).getValue() )
+            if( (cardsToPlay.get(0).getCardValue() + cardsToPlay.get(1).getCardValue() ) == cardsToPlay.get(2).getCardValue() )
                 return true;
         }
 
@@ -125,7 +108,7 @@ public class GameLogic extends iGame implements java.io.Serializable {
 
     public boolean userPlayCards(ArrayList<Card> cardsToPlay)
     {
-        if( !IsCardsCanBePlayed( player, cardsToPlay ) )
+        if( !isCardsCanBePlayed( player, cardsToPlay ) )
             return false;
 
         for (Card card: cardsToPlay) {
@@ -143,10 +126,10 @@ public class GameLogic extends iGame implements java.io.Serializable {
 
         if( cardsToPlay.size() == 0){
             AiOponent ai = new AiOponent(opponent, player);
-            ai.ChooseOponentCardToPlay(getLastCard().getType(), cardsToPlay );
+            ai.ChooseOponentCardToPlay(getLastCard().getCardType(), cardsToPlay );
         }
 
-        if( !IsCardsCanBePlayed( opponent, cardsToPlay ) )
+        if( !isCardsCanBePlayed( opponent, cardsToPlay ) )
             return false;
 
         for (Card card: cardsToPlay) {
@@ -177,17 +160,11 @@ public class GameLogic extends iGame implements java.io.Serializable {
         return player.GetCards();
     }
     public Card getLastCard() {
-        if( playedCards.size() > 0 ) {
-            return playedCards.get( 0 );
-        }
-        return null;
+        return cardDealer.getLastCard();
     }
     public Card getBeforeLastCard() {
-        if( playedCards.size() > 1 ) {
-            return playedCards.get(1);
-        }
-        return null;
-}
+        return cardDealer.getBeforeLastCard();
+    }
     public iGame.Winner whoIsWinner()
     {
         if( player.hasWinnigCombination() )

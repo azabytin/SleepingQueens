@@ -19,24 +19,24 @@ public class GameState extends iGame {
     private Card LastCard;
     private Card BeforeLastCard;
     private iGame.Winner whoWinner;
-    private boolean canUserPlay;
+    private boolean canUserPlay = false;
     private final String serverHost;
 
-    public GameState( String _serverHost)
+    public GameState( String serverHost)
     {
-        serverHost = _serverHost;
+        this.serverHost = serverHost;
     }
 
-    private void InitFromGameLogic(iGame _serverLogic){
-        HumanCards = _serverLogic.getOpponentCards();
-            ComputerQueenCards = _serverLogic.getPlayerQueenCards();
-            HumanQueenCards = _serverLogic.getOpponentQueenCards();
-            LastCard = _serverLogic.getLastCard();
-            BeforeLastCard = _serverLogic.getBeforeLastCard();
-            whoWinner = _serverLogic.whoIsWinner();
-            canUserPlay = _serverLogic.canOponentPlay();
+    private void InitFromGameLogic(iGame serverLogic){
+        HumanCards = serverLogic.getOpponentCards();
+            ComputerQueenCards = serverLogic.getPlayerQueenCards();
+            HumanQueenCards = serverLogic.getOpponentQueenCards();
+            LastCard = serverLogic.getLastCard();
+            BeforeLastCard = serverLogic.getBeforeLastCard();
+            whoWinner = serverLogic.whoIsWinner();
+            canUserPlay = serverLogic.canOponentPlay();
 
-        ComputerCards = _serverLogic.getPlayerCards();
+        ComputerCards = serverLogic.getPlayerCards();
     }
 
     public void startNewGame(){}

@@ -44,7 +44,8 @@ class ServerSocketSerializer {
         }
     }
 
-    public void writeGameLogic(GameLogic gameLogic) throws java.io.IOException {
+    public void writeGameLogic(iGame gameLogic) throws java.io.IOException {
+        // TODO: Maybe oos.writeObject(gameLogic);???
         oos.writeObject(gameLogic);
     }
 }

@@ -12,12 +12,12 @@ public class CardsProcessor {
     private ArrayList<Card> selectedCardsToPlay;
     private iGame game;
 
-    public CardsProcessor( iGame _game){
-        game = _game;
+    public CardsProcessor( iGame game){
+        this.game = game;
         reset();
     }
-    public void setGame( iGame _game){
-        game = _game;
+    public void setGame( iGame game){
+        this.game = game;
         reset();
     }
     public void reset(){

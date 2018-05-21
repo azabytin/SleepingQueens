@@ -1,5 +1,7 @@
 package com.example.azabytin.SleepingQueens;
 
+import static com.example.azabytin.SleepingQueens.Card.cardType.none;
+
 /**
  * Created by azabytin on 16.01.2018.
  */
@@ -8,35 +10,35 @@ public class Card implements java.io.Serializable{
 
     public enum cardType{none, number, king, queen, stick, magic, knight, dragon, jocker}
 
-    public Card( cardType t, int r )
+    public Card( cardType cardType, int resourceId )
     {
-        this( t, r, 0);
+        this( cardType, resourceId, 0);
     }
 
-    public Card( int r )
+    public Card( int resourceId )
     {
-        this( cardType.none, r, 0);
+        this( none, resourceId, 0);
     }
     public Card( cardType t)
     {
         this( t, 0, 0);
     }
 
-    public Card( cardType t, int r, int v )
+    public Card( cardType cardType, int resourceId, int cardValue )
     {
-      type = t;
-      resourceId = r;
-      value = v;
+      this.cardType = cardType;
+      this.resourceId = resourceId;
+      this.cardValue = cardValue;
     }
 
     final int resourceId;
 
-    private final int value;
-    public int getValue() {
-        return value;
+    private final int cardValue;
+    public int getCardValue() {
+        return cardValue;
     }
 
-    private final cardType type;
+    private final cardType cardType;
     private boolean roseQueen = false;
     private boolean dogCatQueen = false;
 
@@ -46,24 +48,24 @@ public class Card implements java.io.Serializable{
     public void setDogCatQueen(){dogCatQueen = true;}
     public boolean isDogCatQueen(){return dogCatQueen;}
 
-    public boolean isKnight( ){return type == cardType.knight; }
-    public boolean isStick( ){return type == cardType.stick; }
-    public boolean isMagic( ){return type == cardType.magic; }
-    public boolean isDragon( ){return type == cardType.dragon; }
-    public boolean isKing( ){return type == cardType.king; }
-    public boolean isNumver( ){return type == cardType.number; }
+    public boolean isKnight( ){return cardType == Card.cardType.knight; }
+    public boolean isStick( ){return cardType == Card.cardType.stick; }
+    public boolean isMagic( ){return cardType == Card.cardType.magic; }
+    public boolean isDragon( ){return cardType == Card.cardType.dragon; }
+    public boolean isKing( ){return cardType == Card.cardType.king; }
+    public boolean isNumver( ){return cardType == Card.cardType.number; }
     public boolean isOddNumver( ){
-        return type == cardType.number && value % 2 != 0;
+        return cardType == Card.cardType.number && cardValue % 2 != 0;
     }
     public boolean isEvenNumver( ) {
-        return type == cardType.number && value % 2 == 0;
+        return cardType == Card.cardType.number && cardValue % 2 == 0;
     }
 
-    public boolean isJocker( ){return type == cardType.jocker; }
+    public boolean isJocker( ){return cardType == Card.cardType.jocker; }
 
-    public cardType getType() {
+    public cardType getCardType() {
 
-        return type;
+        return cardType;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class Card implements java.io.Serializable{
         boolean isEqual=false;
         if(o!=null && o instanceof Card) {
             Card card = (Card)o;
-            isEqual=(this.resourceId==card.resourceId) && (this.type==card.type) && (this.value==card.value);
+            isEqual=(this.resourceId==card.resourceId) && (this.cardType ==card.cardType) && (this.cardValue ==card.cardValue);
         }
         return isEqual;
     }

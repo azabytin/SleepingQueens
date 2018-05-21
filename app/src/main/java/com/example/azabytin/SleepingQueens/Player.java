@@ -44,19 +44,21 @@ public class Player implements java.io.Serializable
         return queenCards;
     }
 
-    public Player GetOpponent(){
+    public Player getOpponent(){
         return opponent;
     }
     public void SetOpponent(Player o){
         opponent = o;
     }
 
-    public void GetBackQueen( PlayCardsStack queenCardsStack ){
+    public Card GetQueen( ){
+        Card queenCard = null;
 
         if(queenCards.size() > 0){
-            queenCardsStack.Add(queenCards.get(0));
+            queenCard = queenCards.get(0);
             queenCards.remove(0);
         }
+        return queenCard;
     }
 
     public void GiveOponentQueen(){
@@ -66,7 +68,7 @@ public class Player implements java.io.Serializable
         }
     }
 
-    private boolean hasDogCatQueen(){
+    public boolean hasDogCatQueen(){
         for( Card card : queenCards){
             if( card.isDogCatQueen()){
                 return true;
@@ -75,20 +77,9 @@ public class Player implements java.io.Serializable
         return false;
     }
 
-    public void AddQueenCard( PlayCardsStack queensStack)
+    public void addQueenCard(Card queenCard)
     {
-        Card queenCard = queensStack.Get();
-
-        if( queenCard.isDogCatQueen() && hasDogCatQueen()){
-            queensStack.Add(queenCard);
-        }
-        else{
-            queenCards.add(0, queenCard);
-        }
-
-        if( queenCard.isRoseQueen() ){
-            queenCards.add(0, queensStack.Get());
-        }
+        queenCards.add(0, queenCard);
     }
 
     public void AddCard( Card card)
@@ -96,7 +87,7 @@ public class Player implements java.io.Serializable
         сards.add(0, card);
     }
 
-    public Card GetLastAddedCard( )
+    public Card getLastAddedCard( )
     {
         return сards.get(0);
     }
@@ -113,14 +104,14 @@ public class Player implements java.io.Serializable
         return canUserPlay;
     }
 
-    public void setCanUserPlay(boolean _canUserPlay) {
-        canUserPlay = _canUserPlay;
+    public void setCanUserPlay(boolean canUserPlay) {
+        this.canUserPlay = canUserPlay;
     }
 
     public boolean hasWinnigCombination(){
         int value = 0;
         for( Card card: queenCards){
-            value += card.getValue();
+            value += card.getCardValue();
         }
         return (value >= 50) || (queenCards.size() > 2);
     }
