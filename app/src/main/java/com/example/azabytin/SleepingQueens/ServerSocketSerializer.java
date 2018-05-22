@@ -30,7 +30,7 @@ class ServerSocketSerializer {
 
     public void accept() throws java.io.IOException {
         SocketChannel sChannel = ssChannel.accept();
-        sChannel.socket().setSoTimeout(200);
+        sChannel.socket().setSoTimeout(300);
         oos = new ObjectOutputStream(sChannel.socket().getOutputStream());
         ois = new ObjectInputStream(sChannel.socket().getInputStream());
     }

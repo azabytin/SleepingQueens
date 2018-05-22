@@ -50,23 +50,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ServerSocketSerializer serverSerializer;
             try {
                 serverSerializer = new ServerSocketSerializer();
+                while (!Thread.interrupted()) {
+                    try {
+
+                        serverSerializer.accept();
+                        serverSerializer.writeGameLogic(serverThreadGameLogic);
+
+                        ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
+                        runOnUiThread( ()-> gameLogic.oponentPlayCards(cardsToPlay));
+                        Thread.sleep(100);
+
+                    } catch (Exception ignored) {
+                    }
+                }
+                serverSerializer.accept();
+                serverSerializer.writeGameLogic(serverThreadGameLogic);
+
             }catch (Exception e){
                 return;
             }
 
-            while (!Thread.interrupted()) {
-                try {
 
-                    serverSerializer.accept();
-                    serverSerializer.writeGameLogic(serverThreadGameLogic);
-
-                    ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
-                    runOnUiThread( ()-> gameLogic.oponentPlayCards(cardsToPlay));
-                    Thread.sleep(100);
-
-                } catch (Exception ignored) {
-                }
-            }
             serverSerializer.close();
         }
     }
