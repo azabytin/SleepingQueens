@@ -22,9 +22,11 @@ public class ClientServerNegotiator {
     private DatagramSocket udpSocketForNegotiation;
     private DatagramPacket broadcastPkt;
 
-    public ClientServerNegotiator()
+    public ClientServerNegotiator() throws Exception
     {
+
         allPeersAddresses.add( NetUtils.getMyIPAddress() );
+        InitSocket();
     }
 
     private void InitSocket()throws java.net.UnknownHostException, java.net.SocketException{
@@ -50,7 +52,7 @@ public class ClientServerNegotiator {
         boolean hasNewPeer = false;
 
         try {
-            InitSocket();
+            //InitSocket();
             udpSocketForNegotiation.send(broadcastPkt);
 
             while (!hasNewPeer) {
@@ -66,7 +68,7 @@ public class ClientServerNegotiator {
             String s = ignored.toString();
         }
 
-        udpSocketForNegotiation.close();
+        //udpSocketForNegotiation.close();
 
          AddPeerToPeersList( broadcastPkFromPeer.getAddress().getHostName() );
          return allPeersAddresses.size();

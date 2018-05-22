@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private iGame gameLogic;
     private NetworkGameThread networkGameThread = null;
-    private ProgressDialog networkConnectProgressDialog = null;
     private ButtonUpdater buttonUpdater = null;
 
     private CardsProcessor cardProcessor = null;
@@ -25,26 +24,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     class ClientServerNegotiatorThread extends Thread {
         @Override
         public void run() {
-            ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
+
             try {
+                ClientServerNegotiator clientServerNegotiator = new ClientServerNegotiator();
                 while( !Thread.interrupted() && clientServerNegotiator.checkForNewPeer() < 2 ){
                     Thread.sleep(100);
                 }
+
+                runOnUiThread( ()-> onNetworkPeerFound( clientServerNegotiator )) ;
             } catch (Exception ignored){
-                String s = ignored.toString();
             }
-            runOnUiThread( ()-> onNetworkPeerFound( clientServerNegotiator )) ;
         }
     }
 
     class NetworkGameThread extends Thread {
 
-        private final AtomicInteger loopCount = new AtomicInteger(Integer.MAX_VALUE);
         private final iGame serverThreadGameLogic;
-
-        void stopThread() {
-            loopCount.set(1);
-        }
 
         NetworkGameThread(iGame gameLogic){
             serverThreadGameLogic = gameLogic;
@@ -59,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
 
-            while (isRunning()) {
+            while (!Thread.interrupted()) {
                 try {
 
                     serverSerializer.accept();
@@ -67,16 +62,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     ArrayList<Card> cardsToPlay = serverSerializer.readCardsToPlay();
                     runOnUiThread( ()-> gameLogic.oponentPlayCards(cardsToPlay));
+                    Thread.sleep(100);
 
-
-                } catch (Exception e) {
-                    //Log.e("NetworkGameThread", "serverLoop::Exception");
+                } catch (Exception ignored) {
                 }
             }
             serverSerializer.close();
-        }
-        private boolean isRunning() {
-            return loopCount.decrementAndGet() > 0;
         }
     }
 
@@ -87,24 +78,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if( clientServerNegotiator.getGameType() == ClientServerNegotiator.GameType.ServerGame ){
             gameLogic = new GameLogic( new CardDealer() );
             networkGameThread = new NetworkGameThread( gameLogic );
-            networkGameThread.run();
+            networkGameThread.start();
         }else {
             gameLogic = new GameState( clientServerNegotiator.getServerHostName() );
+            timerHandler.postDelayed(executeUpdateClientGameState, 100);
         }
 
         cardProcessor.setGame( gameLogic );
         timerHandler.postDelayed(updateTimerRunnable, 100);
-        timerHandler.postDelayed(executeUpdateClientGameState, 100);
     }
 
     private final Runnable executeUpdateClientGameState = new Runnable()  {
 
         @Override
         public void run(){
-
+            timerHandler.postDelayed(this, 1000);
             GameState gameState = (GameState) gameLogic;
             gameState.Update();
-            timerHandler.postDelayed(this, 1000);
         }
     };
 
@@ -113,17 +103,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void run() {
-            runOnUiThread(()-> doUpdateCardsView());
             timerHandler.postDelayed(this, 100);
+            runOnUiThread(()-> doUpdateCardsView());
         }
     };
 
-    private final Runnable timerOponentPlayRunnable = new Runnable()  {
+        private final Runnable timerOponentPlayRunnable = new Runnable()  {
 
         @Override
         public void run() {
-            runOnUiThread(()-> gameLogic.oponentPlayCards( ));
             timerHandler.postDelayed(this, 2000);
+            runOnUiThread(()-> gameLogic.oponentPlayCards( ));
         }
     };
 
@@ -133,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timerHandler.removeCallbacks(timerOponentPlayRunnable);
         timerHandler.removeCallbacks(executeUpdateClientGameState);
         if( networkGameThread != null ) {
-            networkGameThread.stopThread();
+            networkGameThread.interrupt();
         }
     }
 

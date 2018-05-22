@@ -48,20 +48,20 @@ public class Card implements java.io.Serializable{
     public void setDogCatQueen(){dogCatQueen = true;}
     public boolean isDogCatQueen(){return dogCatQueen;}
 
-    public boolean isKnight( ){return cardType == Card.cardType.knight; }
-    public boolean isStick( ){return cardType == Card.cardType.stick; }
-    public boolean isMagic( ){return cardType == Card.cardType.magic; }
-    public boolean isDragon( ){return cardType == Card.cardType.dragon; }
-    public boolean isKing( ){return cardType == Card.cardType.king; }
-    public boolean isNumver( ){return cardType == Card.cardType.number; }
-    public boolean isOddNumver( ){
-        return cardType == Card.cardType.number && cardValue % 2 != 0;
+    public boolean isKnight( ){return cardType == cardType.knight; }
+    public boolean isStick( ){return cardType == cardType.stick; }
+    public boolean isMagic( ){return cardType == cardType.magic; }
+    public boolean isDragon( ){return cardType == cardType.dragon; }
+    public boolean isKing( ){return cardType == cardType.king; }
+    public boolean isNumber( ){return cardType == cardType.number; }
+    public boolean isOddNumber( ){
+        return cardType == cardType.number && cardValue % 2 != 0;
     }
-    public boolean isEvenNumver( ) {
-        return cardType == Card.cardType.number && cardValue % 2 == 0;
+    public boolean isEvenNumber( ) {
+        return cardType == cardType.number && cardValue % 2 == 0;
     }
 
-    public boolean isJocker( ){return cardType == Card.cardType.jocker; }
+    public boolean isJocker( ){return cardType == cardType.jocker; }
 
     public cardType getCardType() {
 

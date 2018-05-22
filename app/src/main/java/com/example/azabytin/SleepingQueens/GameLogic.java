@@ -65,10 +65,10 @@ public class GameLogic extends iGame implements java.io.Serializable {
         cardDealer.refillAllPlayersCardsFromStack(opponent);
 
         if( card.isJocker()){
-            if(  player.getLastAddedCard().isOddNumver() ){
+            if(  player.getLastAddedCard().isOddNumber() ){
                 cardDealer.givePlayerQueen(player);
             }
-            if(  player.getLastAddedCard().isEvenNumver() ){
+            if(  player.getLastAddedCard().isEvenNumber() ){
                 cardDealer.givePlayerQueen( player.getOpponent() );
             }
         }

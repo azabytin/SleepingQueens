@@ -70,12 +70,13 @@ public class GameState extends iGame {
         return whoWinner;
     }
     public boolean userPlayCards(ArrayList<Card> cardsToPlay){
+        ArrayList<Card> cardsToPlayCopy = new ArrayList<>(cardsToPlay);
 
         new AsyncTask<Void, Boolean, Boolean>() {
             @Override
             protected Boolean doInBackground(final Void... params) {
                 try {
-                    new ClientSocketSerializer(serverHost).writeCardsToPlay(cardsToPlay);
+                    new ClientSocketSerializer(serverHost).writeCardsToPlay(cardsToPlayCopy);
                 }catch (Exception ignored){}
                 return true;
             }
@@ -92,7 +93,9 @@ public class GameState extends iGame {
             protected GameLogic doInBackground(final Void... params) {
                 try {
                     return new ClientSocketSerializer(serverHost).readGameLogic();
-                }catch (Exception ignored){}
+                }catch (Exception ignored){
+                    String s = ignored.getMessage();
+                }
                 return null;
             }
 

@@ -20,7 +20,7 @@ public class UserCards extends ArrayList<Card> implements java.io.Serializable{
     public Card GetNumber()
     {
         for (Card card : this){
-            if( card.isNumver()  )
+            if( card.isNumber()  )
                 return card;
         }
         return null;

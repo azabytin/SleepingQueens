@@ -2,7 +2,7 @@ package com.example.azabytin.SleepingQueens;
 
 import java.util.ArrayList;
 
-public class CardDealer {
+public class CardDealer implements java.io.Serializable{
 
     private PlayCardsStack playCardsStack;
     private PlayCardsStack queenCardsStack;
